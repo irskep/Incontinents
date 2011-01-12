@@ -3,7 +3,7 @@ from pyglet import gl
 from pyglet.window import key
 
 class MapGenWindow(pyglet.window.Window):
-    def __init__(self, my_gen):
+    def __init__(self, my_gen, landmass=None):
         self.my_gen = my_gen
         super(MapGenWindow,self).__init__(width=800, height=800)
         gl.glEnable(gl.GL_BLEND)
@@ -16,7 +16,7 @@ class MapGenWindow(pyglet.window.Window):
         gl.glHint(gl.GL_LINE_SMOOTH_HINT,gl.GL_NICEST);
         gl.glDisable(gl.GL_DEPTH_TEST)
         
-        self.landmass = self.my_gen.generate()
+        self.landmass = landmass or self.my_gen.generate()
         self.draw_capitals = True
         
         self.labels = []
