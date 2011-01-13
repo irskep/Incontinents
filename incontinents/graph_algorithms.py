@@ -7,7 +7,7 @@ psyco.full()
 def map_triangles(triangles):
     m = dict()
     for i,tri in enumerate(triangles):
-        m.update({tri.get_tuple():(i,tri)})
+        m.update({tri.tuple:(i,tri)})
     return m
 
 def dfs(root, triangles):
@@ -115,7 +115,7 @@ def floyd_warshall(triangles):
     m = dict()
     for i,a in enumerate(keys):
         for j,b in enumerate(keys):
-            if not m.has_key(a): m.update({a.get_tuple():dict()})
-            m[a].update({b.get_tuple():d[-1][i][j]})
+            if not m.has_key(a): m.update({a.tuple:dict()})
+            m[a].update({b.tuple:d[-1][i][j]})
     
     return m

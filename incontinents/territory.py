@@ -150,9 +150,9 @@ class LandTerr(Territory):
         self.points = []
         for line in self.lines:
             if line.a not in self.points:
-                self.points.append(line.a.get_tuple())
+                self.points.append(line.a.tuple)
             if line.b not in self.points:
-                self.points.append(line.b.get_tuple())
+                self.points.append(line.b.tuple)
         self.x = 0.0
         self.y = 0.0
         for point in self.points:
@@ -161,13 +161,10 @@ class LandTerr(Territory):
         self.x /= len(self.points)
         self.y /= len(self.points)
         
-        ok = True
-        if not self.point_inside(self.x, self.y): ok = False
-        if not self.point_inside(self.x+15, self.y): ok = False
-        if not self.point_inside(self.x-15, self.y): ok = False
-        if not self.point_inside(self.x, self.y+15): ok = False
-        if not self.point_inside(self.x, self.y-15): ok = False
-        if ok:
+        check_pairs = ((self.x, self.y), (self.x+15, self.y), (self.x+15, self.y),
+                       (self.x, self.y+15), (self.x, self.y-15))
+        
+        if reduce(lambda a, b: a and self.point_inside(*b), check_pairs, True):
             self.place_piece()
             return
         

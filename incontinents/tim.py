@@ -69,9 +69,9 @@ def make_tri_row(h, w, x_offset, y_offset, tri_size, points, flip=False, n=1):
         #surface[p3.y][p3.x] = n
         
         tri = primitives.Triangle(p1, p2, p3, primitives.Point(mid_x, mid_y))
-        add_point(points, p1, tri.get_tuple())
-        add_point(points, p2, tri.get_tuple())
-        add_point(points, p3, tri.get_tuple())
+        add_point(points, p1, tri.tuple)
+        add_point(points, p2, tri.tuple)
+        add_point(points, p3, tri.tuple)
         
         triangles.append(tri)
         
@@ -192,7 +192,7 @@ def build_map(triangles, G, chosen, available):
                     break
                 if good:
                     c = G[c][1]
-                    chosen.add(c.get_tuple())
+                    chosen.add(c.tuple)
                     available.remove(c)
                     terr.add_triangle(c.p1.x, c.p1.y, c.p2.x, c.p2.y, c.p3.x, c.p3.y)
                     terr.adjacencies = list((set(terr.adjacencies) | set(c.adj)) - set([c]))

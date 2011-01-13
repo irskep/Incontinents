@@ -44,7 +44,7 @@ territory
 primitives
     Point(x, y)
         x, y
-        get_tuple()
+        tuple
             returns (x, y)
         You can refer to point like p[0], p[1] as well.
     

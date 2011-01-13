@@ -284,7 +284,7 @@ class ContinentGenerator(Generator):
     
     def expand_to_trapezoid(self, line):
         r = self.get_radius()
-        l = line.get_length() * 0.8 + random.random()*0.4
+        l = line.length * 0.8 + random.random()*0.4
         l = max(l, 10)
         nx = r*math.cos(line.normal)
         ny = r*math.sin(line.normal)
