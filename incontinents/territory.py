@@ -1,4 +1,4 @@
-import util, random
+import util, random, itertools
 
 PICK_TRIANGLE = 0
 AVERAGE_POINTS = 1
@@ -49,7 +49,7 @@ class LandTerr(Territory):
         self.dist = 0
         self.combinations = 0
         self.offset = (0,0)
-        self.min_x, self.min_y, self.max_x, self.max_y = 0, 0, 0, 0
+        self._min_x, self._min_y, self._max_x, self._max_y = None, None, None, None
     
     def add_line(self, line):
         if line not in self.lines:
@@ -75,31 +75,39 @@ class LandTerr(Territory):
                 if terr.country != None:
                     self.adjacent_countries.append(terr.country)
     
-    def find_bounding_box(self):
-        self.min_x = self.lines[0].a.x
-        self.min_y = self.lines[0].a.y
-        self.max_x = self.min_x
-        self.max_y = self.min_y
-        for line in self.lines:
-            self.min_x = min(line.a.x, self.min_x)
-            self.min_x = min(line.b.x, self.min_x)
-            self.min_y = min(line.a.y, self.min_y)
-            self.min_y = min(line.b.y, self.min_y)
-            self.max_x = max(line.a.x, self.max_x)
-            self.max_x = max(line.b.x, self.max_x)
-            self.max_y = max(line.a.y, self.max_y)
-            self.max_y = max(line.b.y, self.max_y)
-        self.min_x = int(self.min_x)
-        self.min_y = int(self.min_y)
-        self.max_x = int(self.max_x)
-        self.max_y = int(self.max_y)
+    def _find_bounding_box(self):
+        xs = itertools.chain(*((line.a.x, line.b.x) for line in self.lines))
+        ys = itertools.chain(*((line.a.y, line.b.y) for line in self.lines))
+        self._min_x = int(reduce(min, xs, 0))
+        self._max_x = int(reduce(max, xs, 0))
+        self._min_y = int(reduce(min, ys, 0))
+        self._max_y = int(reduce(max, ys, 0))
+    
+    def _get_min_x(self):
+        if self._min_x is None: self._find_bounding_box()
+        return self._min_x
+    
+    def _get_min_y(self):
+        if self._min_y is None: self._find_bounding_box()
+        return self._min_y
+    
+    def _get_max_x(self):
+        if self._max_x is None: self._find_bounding_box()
+        return self._max_x
+    
+    def _get_max_y(self):
+        if self._max_y is None: self._find_bounding_box()
+        return self._max_y
+    
+    min_x = property(_get_min_x)
+    min_y = property(_get_min_y)
+    max_x = property(_get_max_x)
+    max_y = property(_get_max_y)
     
     def check_point(self, x, y, x_dist=12, y_dist=5):
-        if not self.point_inside(x, y): return False
-        if not self.point_inside(x+x_dist, y+y_dist): return False
-        if not self.point_inside(x-x_dist, y+y_dist): return False
-        if not self.point_inside(x+x_dist, y-y_dist): return False
-        if not self.point_inside(x-x_dist, y+y_dist): return False
+        for p in  ((x, y), (x+x_dist, y+y_dist), (x-x_dist, y+y_dist),
+                          (x+x_dist, y-y_dist), (x-x_dist, y+y_dist)):
+            if not self.point_inside(*p): return False
         return True
     
     def place_piece(self):
@@ -136,7 +144,6 @@ class LandTerr(Territory):
         return x, y
     
     def place_text(self):
-        self.find_bounding_box()
         self.x, self.y = self.find_empty_space()
         if self.x == 0 and self.y == 0:
             self.place_text_old()
