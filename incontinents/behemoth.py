@@ -2,7 +2,7 @@ import math, random, sets, util
 import namegen
 from primitives import *
 from territory import *
-from skeleton import *
+from types import *
 
 country_colors = [
     (1.0, 0.0, 0.0, 1.0), (1.0, 0.5, 0.0, 1.0), (1.0, 1.0, 0.0, 1.0), 
@@ -728,7 +728,8 @@ class ContinentGenerator(Generator):
         temp_terr = self.sea_terrs.pop()
         self.sea_terrs.add(temp_terr)
         temp_terr.lines.extend(ocean_lines)
-        print ocean_lines
+        if self.verbose:
+            print ocean_lines
     
     def place_supply_centers(self):
         for country in self.countries:

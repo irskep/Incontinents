@@ -3,7 +3,7 @@
 import primitives
 import territory
 import render
-import skeleton
+import types
 import sys
 import os
 import graph_algorithms
@@ -118,12 +118,12 @@ def gen(triangles):
         terr.add_triangle(tri.p1.x, tri.p1.y, tri.p2.x, tri.p2.y, tri.p3.x, tri.p3.y)
         territories.add(terr)
         lines = lines | set(tri.lines)
-    new_map = skeleton.Map(lines, lines, territories, set())
+    new_map = types.Map(lines, lines, territories, set())
     new_map.find_bounds()
     render.basic(new_map, 't.png')
 
 def make_image(territories, lines):
-    new_map = skeleton.Map(lines, lines, territories, set())
+    new_map = types.Map(lines, lines, territories, set())
     new_map.find_bounds()
     render.basic(new_map, 't2.png')
     

@@ -1,5 +1,5 @@
 import random
-from skeleton import *
+from types import *
 from territory import *
 from primitives import *
 

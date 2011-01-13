@@ -1,49 +1,9 @@
 import render
 import behemoth
 import trigen
-import skeleton
+import types
 
 """
-All colors are 4-tuples in the format (r,g,b,a), each value range 0.0-1.0
-skeleton
-    Map(lines, outside_lines, land_terrs, sea_terrs, countries=[])
-        lines
-            set of Lines. Renderer requires that it be a set, not a list.
-        outside_lines
-            Subset of lines that border water. Useful for optimizing thinsg like determining
-            map size and for finding coastal land territories. See Line.left and Line.right.
-        land_terrs
-            land territories
-        sea_terrs
-            sea territories
-        width, height, offset
-            used for rendering
-        find_bounds()
-            
-    Generator
-        num_countries
-        lines
-            a set() by default
-        outside_lines
-        land_terrs
-        sea_terrs
-        width, height
-            bounding box. optional.
-        verify_data()
-            checks adjacencies, makes sure line list is complete
-    
-    Country(color, name="America")
-        cty_id, name, color, territories[], adjacencies[]
-        size()
-            returns length of territories list
-        add(new_terr)
-        remove(old_terr)
-        absorb(new_terr)
-        find_adjacent_countries()
-        territory_bordering(other)
-            returns a territory adjacent to other if country contains one
-            otherwise return none
-
 territory
     Territory
         country

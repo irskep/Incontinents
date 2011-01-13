@@ -28,15 +28,6 @@ def dfs(root, triangles):
         color[v] = 2
     
     dfs_visit(root)
-    
-    print
-    for tri in path.keys():
-        print tri, path[tri]
-    print
-    for tri in color.keys():
-        print tri, color[tri]
-    print
-    print
 
 def print_matrix(matrix):
     s = '   '

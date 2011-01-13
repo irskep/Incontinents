@@ -139,7 +139,6 @@ class LandTerr(Territory):
         self.find_bounding_box()
         self.x, self.y = self.find_empty_space()
         if self.x == 0 and self.y == 0:
-            print self.abbreviation
             self.place_text_old()
             return
         else:
