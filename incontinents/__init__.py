@@ -1,6 +1,7 @@
-import sys, os, hashlib, shutil
 import render
-import behemoth, trigen, skeleton
+import behemoth
+import trigen
+import skeleton
 
 """
 All colors are 4-tuples in the format (r,g,b,a), each value range 0.0-1.0
@@ -114,31 +115,4 @@ util
         There are more efficient ways to do this, but I could never make them work.
         
 """
-
-def copy_to_unique_name(path, dest_dir=''):
-    f = open(path)
-    file_ext = os.path.splitext(path)[1]
-    h = hashlib.sha1()
-    h.update(f.read())
-    hash = h.hexdigest()
-    f.close()
-    dest = os.path.join(dest_dir, hash+file_ext)
-    shutil.copy(path, dest)
-    return dest
-
-def save_to_image(landmass):
-    render.basic(landmass, "map_temp.png", True, supply_center_image_path="star.png")
-    return copy_to_unique_name("map_temp.png", 'map_images')    
-
-if __name__ == "__main__":
-    gen = behemoth.ContinentGenerator()
-    if len(sys.argv) > 1:
-        gen.base_distance = 40
-        gen.verbose = False
-        render.basic(gen.generate(), sys.argv[1])
-        copy_to_unique_name(sys.argv[1])
-        quit()
-    import demo
-    gen.verbose = True
-    main_window = demo.MapGenWindow(gen)
 

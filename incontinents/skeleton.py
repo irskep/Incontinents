@@ -8,14 +8,16 @@ country_colors = [
 random.shuffle(country_colors)
 
 class Country(object):
+    """Collection of territories belonging to the same governing body"""
+    
     def __init__(self, color, name="America", cty_id=0):
         self.name = name
-        self.color = color
+        self.color = color  #4-tuple of floats in the range 0.0-1.0
         self.territories = []
         self.adjacencies = []
         self.cty_id = cty_id
     
-    def size(self):
+    def __len__(self):
         return len(self.territories)
     
     def add(self, new_terr):
@@ -62,7 +64,7 @@ class Country(object):
         return r
     
     def __repr__(self):
-        return str(self.color) + " #" + self.name
+        return "Country(%s, %s, %d)" % (str(self.color), self.name, self.cty_id)
     
 
 class Map(object):

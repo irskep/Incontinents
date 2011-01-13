@@ -145,7 +145,7 @@ class ContinentGenerator(Generator):
         return largest
     
     def sort_countries(self):
-        self.countries.sort(lambda x, y: x.size()-y.size())
+        self.countries.sort(lambda x, y: len(x)-len(y))
     
     def check_intersections(self, a, b):
         if not self.check_collisions: return True
@@ -516,10 +516,10 @@ class ContinentGenerator(Generator):
         self.sort_countries()
         country = self.countries[-1]
         bad_countries = [
-            c for c in self.countries if c.size() > self.land_terrs_per_player
+            c for c in self.countries if len(c) > self.land_terrs_per_player
         ]
         for country in bad_countries:
-            while country.size() > self.land_terrs_per_player:
+            while len(country) > self.land_terrs_per_player:
                 for terr in self.land_terrs:
                     terr.find_adjacencies()
                 country.territories.sort(
@@ -747,7 +747,7 @@ class ContinentGenerator(Generator):
             for terr in country.territories:
                 terr.color_self()
             if self.verbose:
-                print country.color, country.size()
+                print country.color, len(country)
     
     def combine(self, absorber, to_remove):
         absorber.color = [
