@@ -17,8 +17,8 @@ landmass = gen.generate()
 
 if args.output:
     render.basic(landmass, args.output, draw_cities=True, 
-                 supply_center_image_path="star.png",
-                 font_name="courR08.pil")
+                 supply_center_image_path="resources/star.png",
+                 font_name="resources/courR08.pil")
 
 if args.view:
     main_window = demo.MapGenWindow(gen)
