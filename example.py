@@ -7,12 +7,14 @@ parser = argparse.ArgumentParser(prog='Incontinents',
 make_arg = parser.add_argument
 make_arg('-o', '--output', action='store', type=str,
          help="Where to store the resulting PNG")
+make_arg('-n', '--num', action='store', type=int, default=7,
+      help="Number of countries in the continent")
 make_arg('-v', '--view', action='store_true', default=False,
          help="Immediately show the continent (requires the pyglet library)")
 
 args = parser.parse_args(sys.argv[1:])
 
-gen = behemoth.ContinentGenerator(num_countries=2)
+gen = behemoth.ContinentGenerator(num_countries=args.num)
 landmass = gen.generate()
 
 if args.output:
