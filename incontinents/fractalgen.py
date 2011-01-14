@@ -108,7 +108,6 @@ class FractalGenerator(object):
             or line.length + line.right.length > self.base_distance*3.5:
             return True
         new_line = Line(line.a, line.right.b, line.left, line.right.right)
-        #if not self.check_point(new_line.midpoint): return False
         line.left.right = new_line
         line.right.right.left = new_line
         self.lines.add(new_line)
@@ -116,40 +115,6 @@ class FractalGenerator(object):
         self.outside_lines.remove(line)
         self.outside_lines.remove(line.right)
         self.num_lines -= 1
-        
-        
-        
-        # rn = random.randint(0, 100)
-        # can_expand = True
-        # can_expand = False
-        # for s in line.territories:
-        #     if len(s.lines) > 8: can_expand = False
-        # if rn >= 50 and can_expand:
-        #     self.lines.remove(line)
-        #     for s in line.territories:
-        #         s.remove_line(line)
-        #         s.add_line(new_line)
-        #         s.add_line(line.right)
-        #         s.add_triangle(
-        #             line.a.x, line.a.y, line.b.x, line.b.y, 
-        #             line.right.b.x, line.right.b.y
-        #         )
-        # else:
-        #     rn = random.randint(0, 100)
-        #     can_expand = True
-        #     for s in line.right.territories:
-        #         if len(s.lines) > 8: can_expand = False
-        #     if rn >= 50 and can_expand:
-        #         self.lines.remove(line.right)
-        #         for s in line.right.territories:
-        #             s.remove_line(line.right)
-        #             s.add_line(new_line)
-        #             s.add_line(line)
-        #             s.add_triangle(
-        #                 line.a.x, line.a.y, line.b.x, line.b.y, 
-        #                 line.right.b.x, line.right.b.y
-        #             )
-        #     else:
         self.add_terr([(line.a.x, line.a.y, 
                         line.b.x, line.b.y, 
                         line.right.b.x, line.right.b.y)], 
@@ -157,7 +122,7 @@ class FractalGenerator(object):
                       (0,1,0,1))
         return False
     
-    def make_new_tri(self, base_line, new_point, erase_old=False):
+    def make_new_tri(self, base_line, new_point):
         nl1 = Line(base_line.a, new_point, base_line.left)
         nl2 = Line(new_point, base_line.b, nl1, base_line.right)
         nl1.right = nl2
@@ -169,18 +134,6 @@ class FractalGenerator(object):
         self.lines.add(nl1)
         self.lines.add(nl2)
         self.num_lines -= 2
-        
-        # if erase_old:
-        #     self.lines.remove(base_line)
-        #     for s in base_line.territories:
-        #         s.remove_line(base_line)
-        #         s.add_line(nl1)
-        #         s.add_line(nl2)
-        #         s.add_triangle(
-        #             base_line.a.x, base_line.a.y, base_line.b.x, base_line.b.y, 
-        #             new_point.x, new_point.y
-        #         )
-        # else:
         self.add_terr([(base_line.a.x, base_line.a.y, 
                         base_line.b.x, base_line.b.y, 
                         new_point.x, new_point.y)],
@@ -204,13 +157,7 @@ class FractalGenerator(object):
         if not self.check_intersections(base_line.a, test_point): return
         if not self.check_intersections(test_point, base_line.b): return
         
-        rn = random.randint(0, 100)
-        can_expand = True
-        can_expand = False
-        for s in base_line.territories:
-            if len(s.lines) > 8: can_expand = False
-        
-        self.make_new_tri(base_line, new_point, (rn >= 50 and can_expand))
+        self.make_new_tri(base_line, new_point)
     
     def expand_to_trapezoid(self, line):
         r = self.random_length()
@@ -233,8 +180,8 @@ class FractalGenerator(object):
         if not self.check_intersections(line.b, p2): return
         if not self.check_intersections(p1, p2): return
         
-        nl1, nl2 = self.make_new_tri(line, p1, False)
-        nl3, nl4 = self.make_new_tri(nl2, p2, True)
+        nl1, nl2 = self.make_new_tri(line, p1)
+        nl3, nl4 = self.make_new_tri(nl2, p2)
         nl3.favored = True
     
     def expand_line(self, base_line):
