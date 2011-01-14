@@ -52,10 +52,8 @@ class MapGenWindow(pyglet.window.Window):
             if terr.point_inside(x-self.camera[0], y-self.camera[1]):
                 line_strings = []
                 for line in terr.lines:
-                    id_list = [str(t.id) for t in line.territories]
-                    line_strings.append(', '.join(id_list))
-                print terr.id, terr.country, \
-                    terr.adjacent_countries, terr.adjacencies
+                    line_strings.append(', '.join([t.name for t in line.territories]))
+                print terr.country, terr.adjacent_countries, terr.adjacencies
     
     def draw_line(self, x1, y1, x2, y2):    
         pyglet.graphics.draw(2, pyglet.gl.GL_LINES, ('v2f', (x1, y1, x2, y2)))

@@ -168,7 +168,6 @@ def build_map(triangles, G, chosen, available):
     lines = set([])
     for i, tri in enumerate(chosen):
         terr = territory.LandTerr(tri.lines)
-        terr.id = i
         terr.add_triangle(tri.p1.x, tri.p1.y, tri.p2.x, tri.p2.y, tri.p3.x, tri.p3.y)
         terr.adjacencies += tri.adj
         terr.done = False

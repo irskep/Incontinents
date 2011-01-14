@@ -195,13 +195,14 @@ def _unbalanced_countries(countries):
 def _remove_lone_territories(landmass):
     worked = False
     for terr in landmass.land_terrs:
-        terr.find_adjacencies()
-        if not terr.country in terr.adjacent_countries:
-            for country in terr.adjacent_countries:
-                if country != terr.country:
-                    country.absorb(terr)
-                    worked = True
-                    break
+        if terr.country:
+            terr.find_adjacencies()
+            if not terr.country in terr.adjacent_countries:
+                for country in terr.adjacent_countries:
+                    if country != terr.country:
+                        country.absorb(terr)
+                        worked = True
+                        break
     return worked
 
 def _merge_in_countries(countries, landmass):

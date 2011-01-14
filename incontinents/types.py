@@ -53,6 +53,99 @@ class Map(object):
         absorber.place_text()
         absorber.combinations += 1
     
+    def enforce_territory_count_limit(self, n):
+        if n < 2:
+            return 'No thanks'
+        while len(self.land_terrs) > n:
+            self._combine_random()
+    
+    def _combine_random(self):
+        if len(self.land_terrs) < 2: return
+        if len(self.outside_lines) == len(self.lines): return
+        inside_lines = list(self.lines.difference(self.outside_lines))
+        
+        avg_combos = 0
+        for terr in self.land_terrs:
+            avg_combos += terr.combinations
+        avg_combos /= float(len(self.land_terrs))
+        
+        _first = self.land_terrs.pop()
+        self.land_terrs.add(_first)
+        largest_terr = reduce(lambda a, b: a if len(a.triangles) > len(b.triangles) else b, 
+                              self.land_terrs, _first)
+        
+        candidates_1 = [
+            line for line in inside_lines \
+            if len(line.territories) > 1 \
+            and not largest_terr in line.territories
+        ]
+        candidates_2 = [
+            line for line in candidates_1 \
+            if (len(line.territories[0].triangles) == 1 \
+            or len(line.territories[1].triangles) == 1) \
+            and not largest_terr in line.territories
+        ]
+        if len(candidates_2) > 0:
+            candidates = candidates_2
+        else:
+            candidates = candidates_1
+        found = False
+        i = 0
+        while not found and i < 200:
+            i += 1
+            line = random.choice(inside_lines)
+            found = True
+            if len(line.territories) <= 1:
+                found = False
+            else:
+                for terr in line.territories:
+                    if terr.combinations > avg_combos:
+                        found = False
+        try:
+            absorber = line.territories[0]
+            to_remove = line.territories[1]
+        except:
+            return
+        self.combine(absorber, to_remove)
+    
+    def territory_adjacent_to(self, terr):
+        for line in terr.lines:
+            for terr2 in line.territories:
+                if terr2 != terr:
+                    return terr2
+    
+    def remove_surrounded_or_tiny_territories(self):
+        #Removes territories that are entirely surrounded by a single territory
+        #or are made of only one triangle
+        absorbed = set()
+        for terr in self.land_terrs:
+            check = True
+            for line in terr.lines:
+                if len(line.territories) != 2:
+                    check = False
+            if check:
+                absorb = True
+                surr_terr = terr.lines[0].territories[1]
+                for line in terr.lines:
+                    if line.territories[1] != surr_terr:
+                        absorb = False
+                if absorb:
+                    absorbed.add((surr_terr, terr))
+        for surr_terr, terr in absorbed:
+            self.combine(surr_terr, terr)
+        to_kill = [
+            terr for terr in self.land_terrs if len(terr.triangles) == 1
+        ]
+        li = len(self.land_terrs)
+        for terr in to_kill:
+            self.combine(self.territory_adjacent_to(terr), terr)
+    
+    def assign_names(self, namer):
+        for terr in self.land_terrs:
+            terr.name, terr.abbreviation = namer.create('land')
+        for terr in self.sea_terrs:
+            terr.name, terr.abbreviation = namer.create('sea')
+    
 
 class Generator(object):
     """Abstract landmass generator"""

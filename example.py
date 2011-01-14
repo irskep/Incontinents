@@ -1,6 +1,8 @@
 import argparse, sys
 from incontinents import behemoth, render, demo, namegen, country
 
+primitive_ratio = 0.7
+
 parser = argparse.ArgumentParser(prog='Incontinents',
                                  description='Generate landmasses')
 
@@ -17,6 +19,9 @@ args = parser.parse_args(sys.argv[1:])
 namer = namegen.Namer()
 gen = behemoth.ContinentGenerator(num_countries=args.num, namer=namer)
 landmass = gen.generate()
+landmass.enforce_territory_count_limit(len(landmass.outside_lines) * primitive_ratio)
+landmass.assign_names(namer)
+landmass.remove_surrounded_or_tiny_territories()
 country.assign_countries_to(landmass, args.num)
 
 if args.output:

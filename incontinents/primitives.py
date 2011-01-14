@@ -46,7 +46,6 @@ class Line(object):
         self.outside = True #line is on outside of shape
         self.color = color
         self.territories = []
-        self.id = 0
         self._length = 0     #calculated when requested
         self.favored = False
     

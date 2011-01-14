@@ -1,4 +1,5 @@
 import math, random, sets, util
+# random.seed(2011)
 import namegen
 from primitives import *
 from territory import *
@@ -19,7 +20,6 @@ class ContinentGenerator(Generator):
         self.verbose = verbose
         self.wiggle = math.pi/6
         self.base_distance = 35.0
-        self.primitive_ratio = 0.7
         self.num_lines = 128*num_countries
         self.check_collisions = True
         self.offset = (0,0)
@@ -37,20 +37,8 @@ class ContinentGenerator(Generator):
         if self.verbose: print "generating..."
         self.generate_initial_polygon()
         self.generate_iteratively()
-        
-        if self.verbose: print "combining primitives..."
-        len_outside = len(self.outside_lines)
-        self.inside_lines = list(self.lines.difference(self.outside_lines))
-        i = 0
-        while len(self.land_terrs) > len_outside * self.primitive_ratio:
-            self.combine_random()
-        
-        self.check_map()
-        self.process_objects()
+        self.connect()
         self.make_seas()
-        self.make_oceans()
-        self.verify_data()
-        self.assign_names()
         
         if self.verbose: print "done"
         return self.get_landmass()
@@ -58,8 +46,9 @@ class ContinentGenerator(Generator):
     def get_landmass(self):
         lm = Map(self.lines, self.outside_lines, self.land_terrs, self.sea_terrs)
         lm.name, lm.abbreviation = self.namer.create('land')
-        lm.width, lm.height = int(self.width), int(self.height)
-        lm.offset = self.offset
+        lm.find_bounds()
+        for territory in lm.land_terrs:
+            territory.place_text()
         return lm
     
     def generate_iteratively(self):
@@ -125,15 +114,6 @@ class ContinentGenerator(Generator):
         a1 = math.atan2(line.right.b.y-line.b.y, line.right.b.x-line.b.x)
         a2 = math.atan2(line.a.y-line.b.y, line.a.x-line.b.x)
         return (a1 - a2) % (math.pi*2)
-    
-    def get_largest_territory(self):
-        largest = self.land_terrs.pop()
-        largest_count = len(largest.triangles)
-        self.land_terrs.add(largest)
-        for terr in self.land_terrs:
-            if len(terr.triangles) > largest_count:
-                largest = terr
-        return largest
     
     def check_intersections(self, a, b):
         if not self.check_collisions: return True
@@ -303,66 +283,7 @@ class ContinentGenerator(Generator):
         }
         expand_dict[random.randint(0,len(expand_dict)-1)](base_line)
     
-    def find_adjacent_territory(self, terr):
-        for line in terr.lines:
-            for terr2 in line.territories:
-                if terr2 != terr:
-                    return terr2
-    
-    def check_map(self):
-        if self.verbose: print "checking..."
-        #Removes territories that are entirely surrounded by a single territory
-        #or are made of only one triangle
-        absorbed = set()
-        for terr in self.land_terrs:
-            check = True
-            for line in terr.lines:
-                if len(line.territories) != 2:
-                    check = False
-            if check:
-                absorb = True
-                surr_terr = terr.lines[0].territories[1]
-                for line in terr.lines:
-                    if line.territories[1] != surr_terr:
-                        absorb = False
-                if absorb:
-                    absorbed.add((surr_terr, terr))
-        for surr_terr, terr in absorbed:
-            self.combine(surr_terr, terr)
-        to_kill = [
-            terr for terr in self.land_terrs if len(terr.triangles) == 1
-        ]
-        li = len(self.land_terrs)
-        for terr in to_kill:
-            self.combine(self.find_adjacent_territory(terr), terr)
-        if self.verbose: print "removed", len(to_kill), "tiny territories"
-    
-    def process_objects(self):
-        #Place ids and set bounding box
-        ids = range(0, len(self.land_terrs))
-        for territory, t_id in zip(self.land_terrs, ids):
-            territory.place_text()
-            territory.id = t_id
-        l_id = 0
-        min_x = 0
-        min_y = 0
-        max_x = 0
-        max_y = 0
-        for line in self.lines:
-            line.id = l_id
-            min_x = min(line.a.x, min_x)
-            min_x = min(line.b.x, min_x)
-            min_y = min(line.a.y, min_y)
-            min_y = min(line.b.y, min_y)
-            max_x = max(line.a.x, max_x)
-            max_x = max(line.b.x, max_x)
-            max_y = max(line.a.y, max_y)
-            max_y = max(line.b.y, max_y)
-            l_id += 1
-        self.offset = (-min_x, -min_y)
-        self.width = max_x - min_x
-        self.height = max_y - min_y
-        
+    def connect(self):
         for line in self.outside_lines:
             for adj in line.territories:
                 adj.is_coastal = True
@@ -539,104 +460,4 @@ class ContinentGenerator(Generator):
             while line2 != terr.line.right:
                 line2.color = (1,1,1,1)
                 line2 = line2.right
-    
-    def make_oceans(self):
-        return
-        #ACTUALLY, DO NOT MAKE OCEANS, IT IS SO BROKEN
-        verboten = [s.lines for s in self.sea_terrs]
-        start_line = self.outside_lines.pop()
-        self.outside_lines.add(start_line)
-        
-        ocean_spacing = 10
-        i = ocean_spacing
-        temp_line = start_line.right
-        oceans = []
-        ocean_seeds = []
-        while temp_line != start_line:
-            i -= 1
-            if i <= 0 and temp_line not in verboten:
-                i = ocean_spacing
-                ocean_seeds.append(temp_line)
-                temp_line.color = (1, 0, 1, 1)
-            temp_line = temp_line.right
-        
-        ocean_lines = [Line(l.a, Point(l.a.x*2, l.a.y*2)) for l in ocean_seeds]
-        temp_terr = self.sea_terrs.pop()
-        self.sea_terrs.add(temp_terr)
-        temp_terr.lines.extend(ocean_lines)
-        if self.verbose:
-            print ocean_lines
-    
-    def combine(self, absorber, to_remove):
-        absorber.color = [(absorber.color[i]+to_remove.color[i])/2 for i in range(4)]
-        if absorber == to_remove: 
-            if self.verbose:
-                print 'bad combine attempt: territories are the same'
-            return
-        if to_remove not in self.land_terrs:
-            if self.verbose:
-                print 'bad combine attempt: territory not in list'
-            return
-        self.land_terrs.remove(to_remove)
-        absorber.triangles.extend(to_remove.triangles)
-        for l in to_remove.lines:
-            if l not in absorber.lines:
-                absorber.add_line(l)
-            else:
-                absorber.remove_line(l)
-                self.lines.remove(l)
-        for l in to_remove.lines[:]:
-            to_remove.remove_line(l)
-        absorber.place_text()
-        absorber.combinations += 1
-    
-    def combine_random(self):
-        if len(self.land_terrs) < 2: return
-        if len(self.outside_lines) == len(self.lines): return
-        avg_combos = 0
-        for terr in self.land_terrs:
-            avg_combos += terr.combinations
-        avg_combos /= float(len(self.land_terrs))
-        
-        largest_terr = self.get_largest_territory()
-        
-        candidates_1 = [
-            line for line in self.inside_lines \
-            if len(line.territories) > 1 \
-            and not largest_terr in line.territories
-        ]
-        candidates_2 = [
-            line for line in candidates_1 \
-            if (len(line.territories[0].triangles) == 1 \
-            or len(line.territories[1].triangles) == 1) \
-            and not largest_terr in line.territories
-        ]
-        if len(candidates_2) > 0:
-            candidates = candidates_2
-        else:
-            candidates = candidates_1
-        found = False
-        i = 0
-        while not found and i < 200:
-            i += 1
-            line = random.choice(self.inside_lines)
-            found = True
-            if len(line.territories) <= 1:
-                found = False
-            else:
-                for terr in line.territories:
-                    if terr.combinations > avg_combos:
-                        found = False
-        try:
-            absorber = line.territories[0]
-            to_remove = line.territories[1]
-        except:
-            return
-        self.combine(absorber, to_remove)
-    
-    def assign_names(self):
-        for terr in self.land_terrs:
-            terr.name, terr.abbreviation = self.namer.create('land')
-        for terr in self.sea_terrs:
-            terr.name, terr.abbreviation = self.namer.create('sea')
     
