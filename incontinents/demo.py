@@ -17,7 +17,7 @@ class MapGenWindow(pyglet.window.Window):
         gl.glDisable(gl.GL_DEPTH_TEST)
         
         self.landmass = landmass or self.my_gen.generate()
-        self.draw_capitals = True
+        self.draw_capitals = False
         
         self.labels = []
         self.batch = pyglet.graphics.Batch()
@@ -88,8 +88,8 @@ class MapGenWindow(pyglet.window.Window):
                 w = terr.label.content_width/2+2
                 h = terr.label.content_height/2
                 self.draw_rect(terr.x-w, terr.y-h, terr.x+w, terr.y+h)
-        pyglet.gl.glColor4f(1,1,1,1)
-        self.batch.draw()
+                pyglet.gl.glColor4f(1,1,1,1)
+                self.batch.draw()
         gl.glPopMatrix()
         self.draw_line(
             0, self.height-20, self.my_gen.base_distance, self.height-20

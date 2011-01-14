@@ -72,10 +72,10 @@ class FractalGenerator(object):
         last_line.right = first_line
         first_line.left = last_line
         self.land_terrs = set()
-        self.add_terr(triangles, self.lines)
+        self.add_terr(triangles, self.lines, (1,0,0,1))
     
-    def add_terr(self, triangles, lines):
-        new_terr = LandTerr(lines)
+    def add_terr(self, triangles, lines, color=(0.5, 0.5, 0.5, 1)):
+        new_terr = LandTerr(lines, color=color)
         new_terr.triangles = triangles
         self.land_terrs.add(new_terr)
         return new_terr
@@ -115,41 +115,44 @@ class FractalGenerator(object):
         self.outside_lines.remove(line.right)
         self.num_lines -= 1
         
-        rn = random.randint(0, 100)
-        can_expand = True
-        can_expand = False
-        for s in line.territories:
-            if len(s.lines) > 8: can_expand = False
-        if rn >= 50 and can_expand:
-            self.lines.remove(line)
-            for s in line.territories:
-                s.remove_line(line)
-                s.add_line(new_line)
-                s.add_line(line.right)
-                s.add_triangle(
-                    line.a.x, line.a.y, line.b.x, line.b.y, 
-                    line.right.b.x, line.right.b.y
-                )
-        else:
-            rn = random.randint(0, 100)
-            can_expand = True
-            for s in line.right.territories:
-                if len(s.lines) > 8: can_expand = False
-            if rn >= 50 and can_expand:
-                self.lines.remove(line.right)
-                for s in line.right.territories:
-                    s.remove_line(line.right)
-                    s.add_line(new_line)
-                    s.add_line(line)
-                    s.add_triangle(
-                        line.a.x, line.a.y, line.b.x, line.b.y, 
-                        line.right.b.x, line.right.b.y
-                    )
-            else:
-                self.add_terr([(line.a.x, line.a.y, 
-                                line.b.x, line.b.y, 
-                                line.right.b.x, line.right.b.y)], 
-                              [line, line.right, new_line])
+        
+        
+        # rn = random.randint(0, 100)
+        # can_expand = True
+        # can_expand = False
+        # for s in line.territories:
+        #     if len(s.lines) > 8: can_expand = False
+        # if rn >= 50 and can_expand:
+        #     self.lines.remove(line)
+        #     for s in line.territories:
+        #         s.remove_line(line)
+        #         s.add_line(new_line)
+        #         s.add_line(line.right)
+        #         s.add_triangle(
+        #             line.a.x, line.a.y, line.b.x, line.b.y, 
+        #             line.right.b.x, line.right.b.y
+        #         )
+        # else:
+        #     rn = random.randint(0, 100)
+        #     can_expand = True
+        #     for s in line.right.territories:
+        #         if len(s.lines) > 8: can_expand = False
+        #     if rn >= 50 and can_expand:
+        #         self.lines.remove(line.right)
+        #         for s in line.right.territories:
+        #             s.remove_line(line.right)
+        #             s.add_line(new_line)
+        #             s.add_line(line)
+        #             s.add_triangle(
+        #                 line.a.x, line.a.y, line.b.x, line.b.y, 
+        #                 line.right.b.x, line.right.b.y
+        #             )
+        #     else:
+        self.add_terr([(line.a.x, line.a.y, 
+                        line.b.x, line.b.y, 
+                        line.right.b.x, line.right.b.y)], 
+                      [line, line.right, new_line],
+                      (0,1,0,1))
         return False
     
     def make_new_tri(self, base_line, new_point, erase_old=False):
@@ -165,21 +168,22 @@ class FractalGenerator(object):
         self.lines.add(nl2)
         self.num_lines -= 2
         
-        if erase_old:
-            self.lines.remove(base_line)
-            for s in base_line.territories:
-                s.remove_line(base_line)
-                s.add_line(nl1)
-                s.add_line(nl2)
-                s.add_triangle(
-                    base_line.a.x, base_line.a.y, base_line.b.x, base_line.b.y, 
-                    new_point.x, new_point.y
-                )
-        else:
-            self.add_terr([(base_line.a.x, base_line.a.y, 
-                            base_line.b.x, base_line.b.y, 
-                            new_point.x, new_point.y)],
-                          [nl1, nl2, base_line])
+        # if erase_old:
+        #     self.lines.remove(base_line)
+        #     for s in base_line.territories:
+        #         s.remove_line(base_line)
+        #         s.add_line(nl1)
+        #         s.add_line(nl2)
+        #         s.add_triangle(
+        #             base_line.a.x, base_line.a.y, base_line.b.x, base_line.b.y, 
+        #             new_point.x, new_point.y
+        #         )
+        # else:
+        self.add_terr([(base_line.a.x, base_line.a.y, 
+                        base_line.b.x, base_line.b.y, 
+                        new_point.x, new_point.y)],
+                      [nl1, nl2, base_line],
+                      (0, 0, 1, 1))
         return nl1, nl2
     
     def expand_to_triangle(self, base_line):
