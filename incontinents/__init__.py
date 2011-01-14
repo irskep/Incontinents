@@ -3,3 +3,4 @@ import behemoth
 import trigen
 import types
 import country
+import namegen

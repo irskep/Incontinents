@@ -11,13 +11,12 @@ random.shuffle(country_colors)
 class Map(object):
     """Container for territories, countries, and display objects"""
     
-    def __init__(self, lines, outside_lines, land_terrs, sea_terrs, countries=[]):
+    def __init__(self, lines, outside_lines, land_terrs, sea_terrs):
         super(Map, self).__init__()
         self.lines = lines
         self.outside_lines = outside_lines
         self.land_terrs = land_terrs
         self.sea_terrs = sea_terrs
-        self.countries = countries
         self.name = "Untitled"
         self.map_id = 0
         self.width, self.height = 0, 0
@@ -33,6 +32,26 @@ class Map(object):
         self.offset = (-min_x, -min_y)
         self.width = int(max_x - min_x)
         self.height = int(max_y - min_y)
+    
+    def combine(self, absorber, to_remove):
+        absorber.color = [(absorber.color[i]+to_remove.color[i])/2 for i in range(4)]
+        if absorber == to_remove: 
+            return
+        if to_remove not in self.land_terrs:
+            print 'bad combine attempt: territory not in list'
+            return
+        self.land_terrs.remove(to_remove)
+        absorber.triangles.extend(to_remove.triangles)
+        for l in to_remove.lines:
+            if l not in absorber.lines:
+                absorber.add_line(l)
+            else:
+                absorber.remove_line(l)
+                self.lines.remove(l)
+        for l in to_remove.lines[:]:
+            to_remove.remove_line(l)
+        absorber.place_text()
+        absorber.combinations += 1
     
 
 class Generator(object):

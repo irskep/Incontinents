@@ -1,5 +1,5 @@
 import argparse, sys
-from incontinents import behemoth, render, demo
+from incontinents import behemoth, render, demo, namegen, country
 
 parser = argparse.ArgumentParser(prog='Incontinents',
                                  description='Generate landmasses')
@@ -14,9 +14,10 @@ make_arg('-v', '--view', action='store_true', default=False,
 
 args = parser.parse_args(sys.argv[1:])
 
-gen = behemoth.ContinentGenerator(num_countries=args.num)
+namer = namegen.Namer()
+gen = behemoth.ContinentGenerator(num_countries=args.num, namer=namer)
 landmass = gen.generate()
-
+country.assign_countries_to(landmass, args.num)
 
 if args.output:
     render.basic(landmass, args.output, draw_cities=True, 

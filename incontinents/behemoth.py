@@ -5,13 +5,6 @@ from territory import *
 from types import *
 from country import Country
 
-country_colors = [
-    (1.0, 0.0, 0.0, 1.0), (1.0, 0.5, 0.0, 1.0), (1.0, 1.0, 0.0, 1.0), 
-    (0.0, 1.0, 0.0, 1.0), (0.0, 1.0, 1.0, 1.0), (0.7, 0.0, 1.0, 1.0), 
-    (1.0, 0.5, 1.0, 1.0), (0.7, 0.3, 0.0, 1.0)
-]
-random.shuffle(country_colors)
-
 grey_colors = []
 c = 0.6
 while c < 0.8:
@@ -19,10 +12,10 @@ while c < 0.8:
     c += 0.15
 
 class ContinentGenerator(Generator):
-    def __init__(self, num_countries=7, verbose=False):
+    def __init__(self, num_countries=7, namer=None, verbose=False):
         super(ContinentGenerator, self).__init__(num_countries)
+        self.namer = namer or namegen.Namer()
         self.balance_countries = True
-        self.land_terrs_per_player = 10
         self.verbose = verbose
         self.wiggle = math.pi/6
         self.base_distance = 35.0
@@ -33,7 +26,6 @@ class ContinentGenerator(Generator):
         self.width, self.height = 0, 0
     
     def generate(self):
-        self.namer = namegen.Namer()
         if self.num_lines <= 0:
             self.num_lines = 900
         self.lines = set()
@@ -56,7 +48,6 @@ class ContinentGenerator(Generator):
         self.remove_floating_lines()
         self.check_map()
         self.process_objects()
-        self.make_countries()
         self.make_seas()
         self.make_oceans()
         self.verify_data()
@@ -66,7 +57,7 @@ class ContinentGenerator(Generator):
         return self.get_landmass()
     
     def get_landmass(self):
-        lm = Map(self.lines, self.outside_lines, self.land_terrs, self.sea_terrs, self.countries)
+        lm = Map(self.lines, self.outside_lines, self.land_terrs, self.sea_terrs)
         lm.name, lm.abbreviation = self.namer.create('land')
         lm.width, lm.height = int(self.width), int(self.height)
         lm.offset = self.offset
@@ -144,9 +135,6 @@ class ContinentGenerator(Generator):
             if len(terr.triangles) > largest_count:
                 largest = terr
         return largest
-    
-    def sort_countries(self):
-        self.countries.sort(lambda x, y: len(x)-len(y))
     
     def check_intersections(self, a, b):
         if not self.check_collisions: return True
@@ -390,158 +378,6 @@ class ContinentGenerator(Generator):
                 return True
         return False
     
-    def unbalanced_countries(self):
-        self.sort_countries()
-        q1 = self.num_countries/4.0
-        q2 = int(q1*2)
-        q3 = int(q1*3)
-        q1 = int(q1)
-        quant1 = self.countries[:q1]
-        quant2 = self.countries[q1:q2]
-        quant3 = self.countries[q2:q3]
-        median = util.median(self.countries)
-        mid50 = len(quant2[-1].territories) - len(quant2[0].territories)
-        min_terrs = median - mid50*1.5
-        max_terrs = median + mid50*1.5
-        small = [c for c in self.countries if len(c.territories) < min_terrs]
-        large = [c for c in self.countries if len(c.territories) > max_terrs]
-        
-        if len(self.countries[0].territories)*1.5 \
-                < len(self.countries[-1].territories):
-            if self.countries[0] not in small:
-                small.append(self.countries[0])
-            if self.countries[-1] not in large:
-                large.append(self.countries[-1])
-        return sorted(small), sorted(large)
-    
-    def remove_lone_territories(self):
-        worked = False
-        for terr in self.land_terrs:
-            terr.find_adjacencies()
-            if not terr.country in terr.adjacent_countries:
-                for country in terr.adjacent_countries:
-                    if country != terr.country:
-                        country.absorb(terr)
-                        worked = True
-                        break
-        return worked
-    
-    def make_countries(self):
-        if self.verbose: print 'forming countries...'
-        remaining_terrs = self.land_terrs.copy()
-        
-        self.countries = [
-            Country(country_colors[i]) for i in range(self.num_countries)
-        ]
-        start_line = self.outside_lines.pop()
-        self.outside_lines.add(start_line)
-        this_terr = start_line.territories[0]
-        outside_terrs = [this_terr]
-        this_line = start_line.right
-        while this_line != start_line:
-            if this_line.territories[0] != this_terr:
-                this_terr = this_line.territories[0]
-                outside_terrs.append(this_terr)
-            this_line = this_line.right
-        
-        terrs_per_country = len(outside_terrs)/self.num_countries
-        i = 0
-        for country in self.countries:
-            this_terr = outside_terrs[i]
-            j = 0
-            while this_terr not in remaining_terrs:
-                this_terr = outside_terrs[i + j]
-                j += 1
-            country.add(this_terr)
-            remaining_terrs.remove(this_terr)
-            i += terrs_per_country
-        
-        terrs_left = len(remaining_terrs)
-        
-        worked = True
-        while terrs_left > 0 and worked:
-            worked = False
-            self.sort_countries()
-            for country in self.countries:
-                adjacencies = []
-                for terr in country.territories:
-                    adjacencies.extend(terr.adjacencies)
-                adjacencies = list(sets.Set(adjacencies))
-                random.shuffle(adjacencies)
-                country.expand_options = []
-                for terr in adjacencies:
-                    if terr in remaining_terrs and terr.country == None:
-                        if terr not in country.territories:
-                            remaining_terrs.remove(terr)
-                            country.add(terr)
-                            terrs_left -= 1
-                            worked = True
-                            break
-        
-        small, large = self.unbalanced_countries()
-        i = 0
-        while len(small) > 0 and i < 1000:
-            i += 1
-            for country in small:
-                try:
-                    country.find_adjacent_countries()
-                    if len(large) > 0:
-                        if random.randint(0,1) == 0:
-                            target = large[-1]
-                            to_take = target.land_terrs[0]
-                        else:
-                            target = country.adjacencies[-1]
-                            target.find_adjacent_countries()
-                            to_take = target.territory_bordering(country)
-                    else:
-                        target = country.adjacencies[-1]
-                        target.find_adjacent_countries()
-                        to_take = target.territory_bordering(country)
-                    if to_take != None:
-                        target.remove(to_take)
-                        country.add(to_take)
-                except:
-                    pass #fail silently, mrawrg
-            small, large = self.unbalanced_countries()
-        if i == 1000 and self.verbose: print 'balance fail'
-        
-        worked = True
-        while worked:
-            worked = self.remove_lone_territories()
-        
-        self.merge_in_countries()
-        self.place_supply_centers()
-        self.color_territories()
-    
-    def merge_in_countries(self):
-        self.sort_countries()
-        country = self.countries[-1]
-        bad_countries = [
-            c for c in self.countries if len(c) > self.land_terrs_per_player
-        ]
-        for country in bad_countries:
-            while len(country) > self.land_terrs_per_player:
-                for terr in self.land_terrs:
-                    terr.find_adjacencies()
-                country.territories.sort(
-                    lambda x, y: len(x.adjacencies) - len(y.adjacencies)
-                )
-                to_remove = country.territories[0]
-                to_remove.adjacencies.sort(
-                    lambda x, y: len(x.adjacencies) - len(y.adjacencies)
-                )
-                absorb_candidates = [
-                    t for t in to_remove.adjacencies if t.country == country
-                ]
-                if len(absorb_candidates) > 0:
-                    to_absorb = absorb_candidates[0]
-                    if self.verbose:
-                        print to_remove, absorb_candidates, country
-                    self.combine(to_absorb, to_remove)
-                    country.territories.remove(to_remove)
-                else:
-                    self.remove_lone_territories()
-    
     def make_seas(self):
         if self.verbose: print 'finding bays...'
         max_seeks = len(self.outside_lines)/3
@@ -732,29 +568,8 @@ class ContinentGenerator(Generator):
         if self.verbose:
             print ocean_lines
     
-    def place_supply_centers(self):
-        for country in self.countries:
-            terr_list = [t for t in country.territories if len(t.triangles) > 2]
-            random.shuffle(terr_list)
-            for t in terr_list[:5]:
-                t.has_supply_center = True
-            for t in terr_list[3:]:
-                t.country = None
-            for t in terr_list[:3]:
-                t.occupied = True
-    
-    def color_territories(self):
-        self.sort_countries()
-        for country in self.countries:
-            for terr in country.territories:
-                terr.color_self()
-            if self.verbose:
-                print country.color, len(country)
-    
     def combine(self, absorber, to_remove):
-        absorber.color = [
-            (absorber.color[i]+to_remove.color[i])/2 for i in range(4)
-        ]
+        absorber.color = [(absorber.color[i]+to_remove.color[i])/2 for i in range(4)]
         if absorber == to_remove: 
             if self.verbose:
                 print 'bad combine attempt: territories are the same'
@@ -856,6 +671,4 @@ class ContinentGenerator(Generator):
             terr.name, terr.abbreviation = self.namer.create('land')
         for terr in self.sea_terrs:
             terr.name, terr.abbreviation = self.namer.create('sea')
-        for country in self.countries:
-            country.name, country.abbreviation = self.namer.create('land')
     
