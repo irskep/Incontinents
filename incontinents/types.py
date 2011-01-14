@@ -31,12 +31,12 @@ class Map(object):
         self.offset = (0,0)
     
     def find_bounds(self):
-        xs = itertools.chain(*((line.a.x, line.b.x) for line in self.outside_lines))
-        ys = itertools.chain(*((line.a.y, line.b.y) for line in self.outside_lines))
-        min_x = reduce(min, xs, 0)
-        max_x = reduce(max, xs, 0)
-        min_y = reduce(min, ys, 0)
-        max_y = reduce(max, ys, 0)
+        xs = lambda: itertools.chain(*((line.a.x, line.b.x) for line in self.outside_lines))
+        ys = lambda: itertools.chain(*((line.a.y, line.b.y) for line in self.outside_lines))
+        min_x = reduce(min, xs(), 0)
+        max_x = reduce(max, xs(), min_x)
+        min_y = reduce(min, ys(), 0)
+        max_y = reduce(max, ys(), min_y)
         self.offset = (-min_x, -min_y)
         self.width = int(max_x - min_x)
         self.height = int(max_y - min_y)
