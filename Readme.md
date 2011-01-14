@@ -21,3 +21,7 @@ Questions Asked By Nobody
 Q: Why is the code in [file] so awful?
 
 A: Like so many undergraduate course projects, it was written in a frenzy and released Just Because.
+
+Q: How does it work?
+
+A: Throw me a message and I'll write faster.
