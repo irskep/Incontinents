@@ -17,6 +17,7 @@ args = parser.parse_args(sys.argv[1:])
 gen = behemoth.ContinentGenerator(num_countries=args.num)
 landmass = gen.generate()
 
+
 if args.output:
     render.basic(landmass, args.output, draw_cities=True, 
                  supply_center_image_path="resources/star.png",
