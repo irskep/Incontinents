@@ -17,6 +17,7 @@ def check_point(lm, point):
     return True
 
 def add_seas_to(lm):
+    """CRAP, WHAT IS GOING ON HERE?!!"""
     max_seeks = len(lm.outside_lines)/3
     start_line = lm.outside_lines.pop()
     lm.outside_lines.add(start_line)
