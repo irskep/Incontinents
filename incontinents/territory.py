@@ -46,7 +46,6 @@ class LandTerr(Territory):
             self.add_line(line)
         self.color = color
         self.adjacent_countries = []
-        self.dist = 0
         self.combinations = 0
         self.offset = (0,0)
         self._min_x, self._min_y, self._max_x, self._max_y = None, None, None, None

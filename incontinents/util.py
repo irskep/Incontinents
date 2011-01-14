@@ -2,6 +2,11 @@ import math, primitives
 from itertools import starmap, izip
 from operator import mul
 
+def angle_between_line_and_next(line):
+    a1 = math.atan2(line.right.b.y-line.b.y, line.right.b.x-line.b.x)
+    a2 = math.atan2(line.a.y-line.b.y, line.a.x-line.b.x)
+    return (a1 - a2) % (math.pi*2)
+
 def median(countries):
     values = sorted([len(country.territories) for country in countries])
     if len(values) % 2 == 1:
