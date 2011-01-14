@@ -45,7 +45,6 @@ class ContinentGenerator(Generator):
         while len(self.land_terrs) > len_outside * self.primitive_ratio:
             self.combine_random()
         
-        self.remove_floating_lines()
         self.check_map()
         self.process_objects()
         self.make_seas()
@@ -634,37 +633,6 @@ class ContinentGenerator(Generator):
         except:
             return
         self.combine(absorber, to_remove)
-    
-    def remove_floating_lines(self):
-        if self.verbose: print "removing lone lines..."
-        deletion_queue = []
-        finished = False
-        while not finished:
-            finished = True
-            for line in self.lines:
-                a = False
-                b = False
-                if line not in self.outside_lines:
-                    for line2 in self.lines:
-                        if line != line2:
-                            if line.a == line2.b or line.a == line2.a:
-                                a = True
-                            elif line.b == line2.a or line.b == line2.b:
-                                b = True
-                else:
-                    a = True
-                    b = True
-                if not a or not b:
-                    deletion_queue.append(line)
-                    finished = False
-            for line in deletion_queue:
-                try:
-                    self.lines.remove(line)
-                    terrs = line.territories[:]
-                    for terr in terrs:
-                        terr.remove_line(line)
-                except:
-                    if self.verbose: print 'line remove fail'
     
     def assign_names(self):
         for terr in self.land_terrs:
