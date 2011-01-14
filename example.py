@@ -23,4 +23,4 @@ if args.output:
                  font_name="resources/courR08.pil")
 
 if args.view:
-    main_window = demo.MapGenWindow(gen)
+    main_window = demo.MapGenWindow(gen, landmass)
