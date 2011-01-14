@@ -126,10 +126,7 @@ class LandTerr(Territory):
     
     def check_avoid(self, x, y, avoid_x, avoid_y):
         if avoid_x == 0 and avoid_y == 0: return True
-        if (x-avoid_x)*(x-avoid_x)+(y-avoid_y)*(y-avoid_y) < 20*20:
-            return False
-        else:
-            return True
+        return (x-avoid_x)*(x-avoid_x)+(y-avoid_y)*(y-avoid_y) >= 20*20
     
     def find_empty_space(self, avoid_x=0, avoid_y=0):
         x = random.randint(self.min_x, self.max_x)
@@ -141,40 +138,27 @@ class LandTerr(Territory):
             i += 1
         if i == 200:
             return 0, 0
-        return x, y
+        else:
+            return x, y
     
     def place_text(self):
         self.x, self.y = self.find_empty_space()
         if self.x == 0 and self.y == 0:
-            self.place_text_old()
-            return
-        else:
-            self.place_piece()
+            if not self.place_text_using_point_average():
+                self.place_text_in_largest_triangle()
+        self.place_piece()
     
-    def place_text_old(self):
-        #This is a complicated block of code which attempts to place the text
-        #label in a sane place using a variety of methods.
-        self.points = []
-        for line in self.lines:
-            if line.a not in self.points:
-                self.points.append(line.a.tuple)
-            if line.b not in self.points:
-                self.points.append(line.b.tuple)
-        self.x = 0.0
-        self.y = 0.0
-        for point in self.points:
-            self.x += point[0]
-            self.y += point[1]
-        self.x /= len(self.points)
-        self.y /= len(self.points)
+    def place_text_using_point_average(self):
+        points = {line.a.tuple for line in self.lines} | {line.b.tuple for line in self.lines}
+        self.x = reduce(lambda a, b: a+b[0], points, 0.0)/len(points)
+        self.y = reduce(lambda a, b: a+b[1], points, 0.0)/len(points)
         
         check_pairs = ((self.x, self.y), (self.x+15, self.y), (self.x+15, self.y),
                        (self.x, self.y+15), (self.x, self.y-15))
         
-        if reduce(lambda a, b: a and self.point_inside(*b), check_pairs, True):
-            self.place_piece()
-            return
-        
+        return reduce(lambda a, b: a and self.point_inside(*b), check_pairs, True)
+    
+    def place_text_in_largest_triangle(self):
         chosen_tri = 0
         max_area = 0
         for i in range(1, len(self.triangles)):
@@ -187,22 +171,14 @@ class LandTerr(Territory):
         self.y = tri[1] + tri[3] + tri[5]
         self.x /= 3.0
         self.y /= 3.0
-        self.place_piece()
     
     def color_self(self):
         darken_amt = (1.0-random.random()*0.15)
-        if self.country != None and (self.has_supply_center or self.occupied):
-            col = self.country.color
-        else:
-            col = (1.0, 1.0, 1.0, 1.0)
-        self.color = (
-            col[0]*darken_amt,
-            col[1]*darken_amt,
-            col[2]*darken_amt,
-            1.0
-        )
-        if self.color == (0.0, 0.0, 0.0, 1.0):
-            self.color = self.country.color
+        col = self.country.color if self.country != None \
+                                    and (self.has_supply_center or self.occupied) \
+              else (1.0, 1.0, 1.0, 1.0)
+        self.color = (col[0]*darken_amt, col[1]*darken_amt, col[2]*darken_amt, 1.0)
+        self.color = self.country.color if self.color == (0.0, 0.0, 0.0, 1.0) else self.color
     
     def point_inside(self, x, y):
         """Returns True if (x,y) is inside the territory."""
