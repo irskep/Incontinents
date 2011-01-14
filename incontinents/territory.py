@@ -75,11 +75,11 @@ class LandTerr(Territory):
                     self.adjacent_countries.append(terr.country)
     
     def _find_bounding_box(self):
-        xs = itertools.chain(*((line.a.x, line.b.x) for line in self.lines))
-        ys = itertools.chain(*((line.a.y, line.b.y) for line in self.lines))
+        xs = lambda: itertools.chain(*((line.a.x, line.b.x) for line in self.lines))
+        ys = lambda: itertools.chain(*((line.a.y, line.b.y) for line in self.lines))
         process = lambda f, l: int(reduce(f, l, 0))
-        self._min_x, self._max_x = process(min, xs), process(max, xs)
-        self._min_y, self._max_y = process(min, ys), process(max, ys)
+        self._min_x, self._max_x = process(min, xs()), process(max, xs())
+        self._min_y, self._max_y = process(min, ys()), process(max, ys())
     
     def _get_min_x(self):
         if self._min_x is None: self._find_bounding_box()
