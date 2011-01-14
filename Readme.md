@@ -3,6 +3,8 @@ Incontinents: Landmass generator
 
 This is a somewhat cleaned up undergraduate course project. It generates continents divided into territories for the purpose of playing some sort of board game on it.
 
+![Example](https://github.com/irskep/Incontinents/raw/master/example.png "Example")
+
 Dependencies: PIL, aggdraw, optionally pyglet
 
     usage: Incontinents [-h] [-o OUTPUT] [-n NUM] [-v]
