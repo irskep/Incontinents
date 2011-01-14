@@ -158,7 +158,7 @@ class ContinentGenerator(Generator):
         if not self.check_collisions: return True
         for territory in self.land_terrs:
             for tri in territory.triangles:
-                if util.point_inside_polygon(point.x, point.y, tri):
+                if util.point_inside_triangle(point.x, point.y, tri):
                     return False
         return True
     

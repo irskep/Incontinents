@@ -16,8 +16,11 @@ class Point(object):
     def __hash__(self): return self.tuple.__hash__()
     
     def __eq__(self, b):
-        if type(b) == type(tuple()): return self.tuple == b
-        return self.tuple == b.tuple
+        t = (self.x, self.y)
+        try:
+            return t == b.tuple
+        except:
+            return t == b
     
     def __ne__(self, b):
         return not self.__eq__(b)

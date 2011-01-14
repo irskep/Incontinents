@@ -5,10 +5,7 @@ import random, string
 
 # assumptions: all sea territories end with an end_s
 # land territories may start with a title OR end with end_l
-
-# Pass in type variable, which can be either 'land' or 'sea'
 class Namer(object):
-
     def __init__(self):
         self.title = ["New", "The", "Republic of"]
         self.prefix = [
@@ -19,7 +16,7 @@ class Namer(object):
         self.suffix = ["do", "io", "nia", "a", "sas", "ton", "ho"]
         self.end_l = ["Land", "Kingdom", "Collective", "Republic", "Empire"]
         self.end_s = ["Sea", "Ocean", "Bay"]
-
+        
         self.naming = [
             self.title, self.prefix, self.mid, self.mid2, 
             self.suffix, self.end_l, self.end_s
@@ -28,8 +25,8 @@ class Namer(object):
         self.used_names = set()
         self.used_abbrevs = set()
     
-    def create(self, tpe, i=0):
-
+    def create(self, tpe="land", _i=0):
+        """tpe must be 'land' or 'sea'"""
         name = []
         abbrev = ""
         
@@ -69,9 +66,9 @@ class Namer(object):
         name_str = "".join(name)
         abbrev = string.upper(abbrev)
         
-        if abbrev in self.used_abbrevs or name_str in self.used_names and i < 1000:
-            return self.create(tpe, i+1)
-        elif i >= 100:
+        if abbrev in self.used_abbrevs or name_str in self.used_names and _i < 1000:
+            return self.create(tpe, _i+1)
+        elif _i >= 1000:
             print "Namer recursion depth exceeded (non-fatal, just annoying)"
         
         self.used_names.add(name_str)

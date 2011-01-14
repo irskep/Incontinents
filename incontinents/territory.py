@@ -104,8 +104,8 @@ class LandTerr(Territory):
     max_y = property(_get_max_y)
     
     def check_point(self, x, y, x_dist=12, y_dist=5):
-        for p in  ((x, y), (x+x_dist, y+y_dist), (x-x_dist, y+y_dist),
-                          (x+x_dist, y-y_dist), (x-x_dist, y+y_dist)):
+        for p in  ((x, y),):#, (x+x_dist, y+y_dist), (x-x_dist, y+y_dist),
+                          #(x+x_dist, y-y_dist), (x-x_dist, y+y_dist)):
             if not self.point_inside(*p): return False
         return True
     
@@ -182,7 +182,7 @@ class LandTerr(Territory):
     def point_inside(self, x, y):
         """Returns True if (x,y) is inside the territory."""
         for tri in self.triangles:
-            if util.point_inside_polygon(x, y, tri):
+            if util.point_inside_triangle(x, y, tri):
                 return True
         return False
     

@@ -1,4 +1,6 @@
 import math, primitives
+from itertools import starmap, izip
+from operator import mul
 
 def median(countries):
     values = sorted([len(country.territories) for country in countries])
@@ -9,7 +11,37 @@ def median(countries):
         upper = values[len(values)/2]
         return float(lower+upper)/2
 
+def tuple_sub(a, b):
+    return (a[0]-b[0], a[1]-b[1])
+
+def dot(v1,v2):
+    # http://stackoverflow.com/questions/1828233/optimized-dot-product-in-python
+    return sum(starmap(mul,izip(v1,v2)))
+
+def point_inside_triangle(x, y, coord_list):
+    # http://www.blackpawn.com/texts/pointinpoly/default.html
+    P = (x, y)
+    A = coord_list[0:2]
+    B = coord_list[2:4]
+    C = coord_list[4:6]
+    v0 = tuple_sub(C, A)
+    v1 = tuple_sub(B, A)
+    v2 = tuple_sub(P, A)
+    
+    dot00 = dot(v0, v0)
+    dot01 = dot(v0, v1)
+    dot02 = dot(v0, v2)
+    dot11 = dot(v1, v1)
+    dot12 = dot(v1, v2)
+    
+    invDenom = 1 / (dot00 * dot11 - dot01 * dot01)
+    u = (dot11 * dot02 - dot01 * dot12) * invDenom
+    v = (dot00 * dot12 - dot01 * dot02) * invDenom
+    
+    return (u > 0) and (v > 0) and (u + v < 1)
+
 def point_inside_polygon(x,y,poly_list):
+    print poly_list
     poly = []
     for i in range(len(poly_list)/2):
         poly.append((poly_list[i*2], poly_list[i*2+1]))
