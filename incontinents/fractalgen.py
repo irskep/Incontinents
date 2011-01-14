@@ -104,7 +104,9 @@ class FractalGenerator(object):
             if self.verbose: print 'weird line error'
             return False
         if not self.check_intersections(line.a, line.right.b): return False
-        if util.angle_between_line_and_next(line) > math.pi*0.75: return True
+        if util.angle_between_line_and_next(line) > math.pi*0.75 \
+            or line.length + line.right.length > self.base_distance*3.5:
+            return True
         new_line = Line(line.a, line.right.b, line.left, line.right.right)
         #if not self.check_point(new_line.midpoint): return False
         line.left.right = new_line

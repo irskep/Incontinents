@@ -7,12 +7,6 @@ from types import *
 from country import Country
 from fractalgen import FractalGenerator
 
-grey_colors = []
-c = 0.6
-while c < 0.8:
-    grey_colors.append((c,c,c,1))
-    c += 0.15
-
 class ContinentGenerator(Generator):
     def __init__(self, num_countries=7, namer=None, verbose=False):
         super(ContinentGenerator, self).__init__(num_countries)

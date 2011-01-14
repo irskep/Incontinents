@@ -8,6 +8,14 @@ country_colors = [
 ]
 random.shuffle(country_colors)
 
+grey_colors = []
+c = 0.6
+while c < 0.8:
+    grey_colors.append((c,c,c,1))
+    c += 0.15
+
+grey_colorer = itertools.cycle(grey_colors)
+
 class Map(object):
     """Container for territories, countries, and display objects"""
     
@@ -58,6 +66,8 @@ class Map(object):
             return 'No thanks'
         while len(self.land_terrs) > n:
             self._combine_random()
+        for t in self.land_terrs:
+            t.color = grey_colorer.next()
     
     def _combine_random(self):
         if len(self.land_terrs) < 2: return
