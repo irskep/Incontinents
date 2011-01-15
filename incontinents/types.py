@@ -76,31 +76,14 @@ class Map(object):
         if len(self.outside_lines) == len(self.lines): return
         inside_lines = list(self.lines.difference(self.outside_lines))
         
-        avg_combos = 0
-        for terr in self.land_terrs:
-            avg_combos += terr.combinations
-        avg_combos /= float(len(self.land_terrs))
+        # avg_combos = 0
+        # for terr in self.land_terrs:
+        #     avg_combos += terr.combinations
+        # avg_combos /= float(len(self.land_terrs))
         
         _first = self.land_terrs.pop()
         self.land_terrs.add(_first)
-        largest_terr = reduce(lambda a, b: a if len(a.triangles) > len(b.triangles) else b, 
-                              self.land_terrs, _first)
         
-        candidates_1 = [
-            line for line in inside_lines \
-            if len(line.territories) > 1 \
-            and not largest_terr in line.territories
-        ]
-        candidates_2 = [
-            line for line in candidates_1 \
-            if (len(line.territories[0].triangles) == 1 \
-            or len(line.territories[1].triangles) == 1) \
-            and not largest_terr in line.territories
-        ]
-        if len(candidates_2) > 0:
-            candidates = candidates_2
-        else:
-            candidates = candidates_1
         found = False
         i = 0
         while not found and i < 200:
@@ -109,10 +92,10 @@ class Map(object):
             found = True
             if len(line.territories) <= 1:
                 found = False
-            else:
-                for terr in line.territories:
-                    if terr.combinations > avg_combos:
-                        found = False
+            # else:
+            #     for terr in line.territories:
+            #         if terr.combinations > avg_combos:
+            #             found = False
         try:
             absorber = line.territories[0]
             to_remove = line.territories[1]

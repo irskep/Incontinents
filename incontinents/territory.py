@@ -20,6 +20,12 @@ class Territory(object):
         self.pc_x, self.pc_y = 0, 0
         self.triangles = []
     
+    def find_adjacencies(self):
+        pass
+    
+    def place_text(self):
+        pass
+    
     def __repr__(self):
         return self.name
     
@@ -39,9 +45,6 @@ class SeaTerr(Territory):
         else:    
             self.x, self.y = 0, 0
             self.pc_x, self.pc_y = 0, 0
-    
-    def find_adjacencies(self):
-        pass
     
 
 class LandTerr(Territory):

@@ -1,4 +1,4 @@
-import math, random, sets, util
+import math, random, sets, util, collections, itertools
 # random.seed(2011)
 import namegen
 from primitives import *
@@ -6,11 +6,21 @@ from territory import *
 from types import *
 from country import Country
 
+hash_colors = [
+    (1.0, 0.0, 0.0, 1.0), (1.0, 0.5, 0.0, 1.0), (1.0, 1.0, 0.0, 1.0), 
+    (0.0, 1.0, 0.0, 1.0), (0.0, 1.0, 1.0, 1.0), (0.7, 0.0, 1.0, 1.0), 
+    (1.0, 0.5, 1.0, 1.0), (0.7, 0.3, 0.0, 1.0)
+]
+random.shuffle(hash_colors)
+colorer = itertools.cycle(hash_colors)
+
 class FractalGenerator(object):
     def __init__(self, num_lines):
         super(FractalGenerator, self).__init__()
         self.wiggle = math.pi/6
         self.base_distance = 35.0
+        self.hash_cell_size = int(self.base_distance*4.5)
+        self.hash = collections.defaultdict(set)
         self.num_lines = num_lines
         self.check_collisions = True
         self.offset = (0,0)
@@ -54,7 +64,7 @@ class FractalGenerator(object):
                 self.num_lines -= 1
             else:
                 new_point = first_point
-            new_line = Line(last_point, new_point)
+            new_line = self.make_line(last_point, new_point)
             if line_num > 0:
                 last_line.right = new_line
                 new_line.left = last_line
@@ -74,6 +84,24 @@ class FractalGenerator(object):
         self.land_terrs = set()
         self.add_terr(triangles, self.lines, (1,0,0,1))
     
+    def hashes_for_pair(self, a, b):
+        return (int(a.x/self.hash_cell_size), int(a.y/self.hash_cell_size)), \
+               (int(b.x/self.hash_cell_size), int(b.y/self.hash_cell_size))
+    
+    def make_line(self, *args, **kwargs):
+        l = Line(*args, **kwargs)
+        for k in self.hashes_for_pair(l.a, l.b):
+            self.hash[k].add(l)
+        return l
+    
+    def remove_line_from_outside(self, line):
+        self.outside_lines.remove(line)
+        for k in self.hashes_for_pair(line.a, line.b):
+            try:
+                self.hash[k].remove(line)
+            except KeyError:
+                pass
+    
     def add_terr(self, triangles, lines, color=(0.5, 0.5, 0.5, 1)):
         new_terr = LandTerr(lines, color=color)
         new_terr.triangles = triangles
@@ -85,9 +113,11 @@ class FractalGenerator(object):
     
     def check_intersections(self, a, b):
         if not self.check_collisions: return True
-        for line in self.outside_lines:
-            if util.intersect(a, b, line.a, line.b):
-                return False
+        # for line in self.outside_lines:
+        for k in self.hashes_for_pair(a, b):
+            for line in self.hash[k]:
+                if util.intersect(a, b, line.a, line.b):
+                    return False
         return True
     
     def check_point(self, point):
@@ -107,13 +137,13 @@ class FractalGenerator(object):
         if util.angle_between_line_and_next(line) > math.pi*0.75 \
             or line.length + line.right.length > self.base_distance*3.5:
             return True
-        new_line = Line(line.a, line.right.b, line.left, line.right.right)
+        new_line = self.make_line(line.a, line.right.b, line.left, line.right.right)
         line.left.right = new_line
         line.right.right.left = new_line
         self.lines.add(new_line)
         self.outside_lines.add(new_line)
-        self.outside_lines.remove(line)
-        self.outside_lines.remove(line.right)
+        self.remove_line_from_outside(line)
+        self.remove_line_from_outside(line.right)
         self.num_lines -= 1
         self.add_terr([(line.a.x, line.a.y, 
                         line.b.x, line.b.y, 
@@ -123,12 +153,12 @@ class FractalGenerator(object):
         return False
     
     def make_new_tri(self, base_line, new_point):
-        nl1 = Line(base_line.a, new_point, base_line.left)
-        nl2 = Line(new_point, base_line.b, nl1, base_line.right)
+        nl1 = self.make_line(base_line.a, new_point, base_line.left)
+        nl2 = self.make_line(new_point, base_line.b, nl1, base_line.right)
         nl1.right = nl2
         base_line.left.right = nl1
         base_line.right.left = nl2
-        self.outside_lines.remove(base_line)
+        self.remove_line_from_outside(base_line)
         self.outside_lines.add(nl1)
         self.outside_lines.add(nl2)
         self.lines.add(nl1)
