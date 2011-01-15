@@ -58,8 +58,11 @@ class Map(object):
                 self.lines.remove(l)
         for l in to_remove.lines[:]:
             to_remove.remove_line(l)
+        for t in to_remove.adjacencies:
+            t.find_adjacencies()
         absorber.place_text()
         absorber.combinations += 1
+        absorber.find_adjacencies()
     
     def enforce_territory_count_limit(self, n):
         if n < 2:
@@ -149,6 +152,20 @@ class Map(object):
         li = len(self.land_terrs)
         for terr in to_kill:
             self.combine(self.territory_adjacent_to(terr), terr)
+    
+    def outer_territories(self):
+        start_line = self.outside_lines.pop()
+        self.outside_lines.add(start_line)
+        
+        this_terr = start_line.territories[0]
+        outside_terrs = [this_terr]
+        this_line = start_line.right
+
+        while this_line != start_line:
+            if this_line.territories[0] != this_terr:
+                this_terr = this_line.territories[0]
+                outside_terrs.append(this_terr)
+            this_line = this_line.right
     
     def assign_names(self, namer):
         for terr in self.land_terrs:

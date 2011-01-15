@@ -20,6 +20,10 @@ namer = namegen.Namer()
 gen = steve.ContinentGenerator(num_countries=args.num, namer=namer)
 landmass = gen.generate()
 landmass.enforce_territory_count_limit(len(landmass.outside_lines) * primitive_ratio)
+for t in landmass.land_terrs:
+    for t2 in t.adjacencies:
+        if t2 not in landmass.land_terrs and t2 not in landmass.sea_terrs:
+            print 'wtf?'
 landmass.assign_names(namer)
 landmass.remove_surrounded_or_tiny_territories()
 country.assign_countries_to(landmass, args.num)

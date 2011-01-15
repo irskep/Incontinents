@@ -127,7 +127,7 @@ def add_seas_to(lm):
                             new_bay = SeaTerr(new_line)
                             new_bay.adjacencies = terr.adjacencies + \
                                                     terr2.adjacencies
-                            new_bay.adjacencies = list(sets.Set(
+                            new_bay.adjacencies = list(set(
                                 new_bay.adjacencies
                             ))
                             new_bay.size = len(new_bay.adjacencies)

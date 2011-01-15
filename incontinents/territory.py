@@ -16,10 +16,12 @@ class Territory(object):
         self.x, self.y = 0.0, 0.0
         self.name = ""
         self.abbreviation = ""
-        self.ter_id = 0
         self.is_sea = False
         self.pc_x, self.pc_y = 0, 0
         self.triangles = []
+    
+    def __repr__(self):
+        return self.name
     
 
 class SeaTerr(Territory):
@@ -37,6 +39,9 @@ class SeaTerr(Territory):
         else:    
             self.x, self.y = 0, 0
             self.pc_x, self.pc_y = 0, 0
+    
+    def find_adjacencies(self):
+        pass
     
 
 class LandTerr(Territory):
@@ -172,9 +177,7 @@ class LandTerr(Territory):
     
     def color_self(self):
         darken_amt = (1.0-random.random()*0.15)
-        col = self.country.color if self.country != None \
-                                    and (self.has_supply_center or self.occupied) \
-              else (1.0, 1.0, 1.0, 1.0)
+        col = self.country.color
         self.color = (col[0]*darken_amt, col[1]*darken_amt, col[2]*darken_amt, 1.0)
         self.color = self.country.color if self.color == (0.0, 0.0, 0.0, 1.0) else self.color
     
@@ -184,7 +187,4 @@ class LandTerr(Territory):
             if util.point_inside_triangle(x, y, tri):
                 return True
         return False
-    
-    def __repr__(self):
-        return str(self.ter_id)
     
