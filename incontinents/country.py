@@ -106,11 +106,20 @@ def assign_countries_to(landmass, num=7, namer=None):
                 t = terrs[r].pop()
                 if r is not None:
                     r.remove(t)
-                    terrs_left -= 0.01
+                    terrs_left -= 0.5
                 else:
                     terrs_left -= 1
                 country.add(t)
                 break
+    
+    did_work = True
+    while did_work:
+        did_work = False
+        for c in countries:
+            for t in c.adjacent_territories():
+                if t.country is None:
+                    c.add(t)
+                    did_work = True
     
     for terr in itertools.chain(*(country.territories for country in countries)):
         terr.color_self()
