@@ -58,26 +58,18 @@ def _on_segment(xi, yi, xj, yj, xk, yk):
          (yi <= yk or yj <= yk) and (yk <= yi or yk <= yj)
 
 def _direction(xi, yi, xj, yj, xk, yk):
-    a = (xk - xi) * (yj - yi)
-    b = (xj - xi) * (yk - yi)
-    if a < b:
-        return -1
-    else:
-        if a > b:
-            return 1
-        else:
-            return 0
+    return (xk - xi) * (yj - yi) - (xj - xi) * (yk - yi)
 
 def intersect(a, b, c, d):
-    if a.x == c.x and a.y == c.y or \
-        b.x == d.x and b.y == d.y or \
-        a.x == d.x and a.y == d.y or \
-        b.x == c.x and b.y == c.y:
+    x1, y1 = a.x, a.y
+    x2, y2 = b.x, b.y
+    x3, y3 = c.x, c.y
+    x4, y4 = d.x, d.y
+    if x1 == x3 and y1 == y3 or \
+        x2 == x4 and y2 == y4 or \
+        x1 == x4 and y1 == y4 or \
+        x2 == x3 and y2 == y3:
         return False
-    x1, y1 = a[0], a[1]
-    x2, y2 = b[0], b[1]
-    x3, y3 = c[0], c[1]
-    x4, y4 = d[0], d[1]
     d1 = _direction(x3, y3, x4, y4, x1, y1)
     d2 = _direction(x3, y3, x4, y4, x2, y2)
     d3 = _direction(x1, y1, x2, y2, x3, y3)

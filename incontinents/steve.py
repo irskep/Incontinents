@@ -29,8 +29,6 @@ class ContinentGenerator(Generator):
         lm = Map(self.lines, self.outside_lines, self.land_terrs, self.sea_terrs)
         lm.name, lm.abbreviation = self.namer.create('land')
         lm.find_bounds()
-        for territory in lm.land_terrs:
-            territory.place_text()
         
         sea.add_seas_to(lm)
         return lm

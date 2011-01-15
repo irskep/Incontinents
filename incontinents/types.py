@@ -60,7 +60,6 @@ class Map(object):
             to_remove.remove_line(l)
         for t in to_remove.adjacencies:
             t.find_adjacencies()
-        absorber.place_text()
         absorber.combinations += 1
         absorber.find_adjacencies()
     
@@ -172,6 +171,8 @@ class Map(object):
             terr.name, terr.abbreviation = namer.create('land')
         for terr in self.sea_terrs:
             terr.name, terr.abbreviation = namer.create('sea')
+        for terr in itertools.chain(self.land_terrs, self.sea_terrs):
+            terr.place_text()
     
 
 class Generator(object):
