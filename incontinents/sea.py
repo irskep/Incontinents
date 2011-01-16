@@ -16,9 +16,7 @@ def check_point(lm, point):
                 return False
     return True
 
-def add_seas_to(lm):
-    """CRAP, WHAT IS GOING ON HERE?!!"""
-    max_seeks = len(lm.outside_lines)/3
+def _possible_starting_lines(lm):
     start_line = lm.outside_lines.pop()
     lm.outside_lines.add(start_line)
     line = start_line.right
@@ -28,6 +26,13 @@ def add_seas_to(lm):
         if util.angle_between_line_and_next(line) < math.pi*0.4:
             bay_starts.append(line)
         line = line.right
+    return bay_starts
+
+def add_seas_to(lm):
+    max_seeks = len(lm.outside_lines)/3
+    bay_starts = _possible_starting_lines(lm)
+    
+    ni = 0
     
     #Find bays for all seed lines
     for line in bay_starts:
@@ -84,19 +89,11 @@ def add_seas_to(lm):
                 best_line_left.left, best_line_right
             )
             new_bay = SeaTerr(new_line)
+            ni += 1
             lm.sea_terrs.add(new_bay)
+            
     removal_queue = set()
     persistent_lines = set()
-    for terr in lm.sea_terrs:
-        moving_line = terr.line.left.right
-        while moving_line != terr.line.right.left:
-            for terr2 in moving_line.territories:
-                if not terr2 in terr.adjacencies:
-                    terr.adjacencies.append(terr2)
-                if not terr in terr2.adjacencies:
-                    terr2.adjacencies.append(terr)
-            moving_line = moving_line.right
-        terr.size = len(terr.adjacencies)
     new_bays = set()
     for terr in lm.sea_terrs:
         if terr not in removal_queue:
@@ -178,3 +175,14 @@ def add_seas_to(lm):
         while line2 != terr.line.right:
             line2.color = (1,1,1,1)
             line2 = line2.right
+    
+    for terr in lm.sea_terrs:
+        moving_line = terr.line.left.right
+        while moving_line != terr.line.right.left:
+            for terr2 in moving_line.territories:
+                if not terr2 in terr.adjacencies:
+                    terr.adjacencies.append(terr2)
+                if not terr in terr2.adjacencies:
+                    terr2.adjacencies.append(terr)
+            moving_line = moving_line.right
+        terr.size = len(terr.adjacencies)
