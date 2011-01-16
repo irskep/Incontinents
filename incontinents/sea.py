@@ -36,7 +36,6 @@ def _seed_bays(lm):
         best_line_left = None
         best_line_right = None
         i = 0
-        last_i = 0
         while i < max_seeks:
             i += 1
             line_right = line_right.right
@@ -44,41 +43,31 @@ def _seed_bays(lm):
             if check_intersections(lm, test_line.a, test_line.b) and \
                     check_point(lm, test_line.midpoint):
                 best_line_left, best_line_right = line_left, line_right
-                last_i = i
             line_left = line_left.left
             test_line = Line(line_left.a, line_right.a)
             if check_intersections(lm, test_line.a, test_line.b) and \
                     check_point(lm, test_line.midpoint):
                 best_line_left, best_line_right = line_left, line_right
-                last_i = i
         if best_line_left != None:
             left = best_line_left
             right = best_line_right
-            last_i_2 = 0
             worked = True
             while worked:
                 worked = False
-                i = 0
-                while i < 5:
+                for i in xrange(5):
                     left = left.left
                     test_line = Line(left.a, best_line_right.a)
                     if check_intersections(lm, test_line.a, test_line.b) \
                             and check_point(lm, test_line.midpoint):
                         best_line_left = left
-                        last_i_2 = last_i + i
                         worked = True
-                    i += 1
-                last_i = last_i_2
-                i = 0
-                while i < 5:
+                for i in xrange(5):
                     right = right.right
                     test_line = Line(best_line_left.a, right.a)
                     if check_intersections(lm, test_line.a, test_line.b) \
                                 and check_point(lm, test_line.midpoint):
                         best_line_right = right
-                        last_i_2 = last_i + i
                         worked = True
-                    i += 1
             new_line = Line(
                 best_line_left.a, best_line_right.a, 
                 best_line_left.left, best_line_right
