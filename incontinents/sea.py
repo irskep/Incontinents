@@ -27,6 +27,9 @@ def _possible_starting_lines(lm):
         line = line.right
     return bay_starts
 
+def _line_ok(lm, test_line):
+    return check_point(lm, test_line.midpoint) and check_intersections(lm, test_line.a, test_line.b)
+
 def _seed_bay(lm, line_left, line_right=None, best_line_left=None, best_line_right=None, i=0, max_seeks=None):
     max_seeks = max_seeks or len(lm.outside_lines)/3
     if i >= max_seeks:
@@ -35,13 +38,11 @@ def _seed_bay(lm, line_left, line_right=None, best_line_left=None, best_line_rig
     
     line_right = line_right.right
     test_line = Line(line_left.a, line_right.a)
-    if check_intersections(lm, test_line.a, test_line.b) and \
-            check_point(lm, test_line.midpoint):
+    if _line_ok(lm, test_line):
         best_line_left, best_line_right = line_left, line_right
     line_left = line_left.left
     test_line = Line(line_left.a, line_right.a)
-    if check_intersections(lm, test_line.a, test_line.b) and \
-            check_point(lm, test_line.midpoint):
+    if _line_ok(lm, test_line):
         best_line_left, best_line_right = line_left, line_right
     return _seed_bay(lm, line_left, line_right,
                      best_line_left, best_line_right,
@@ -63,15 +64,13 @@ def _seed_bays(lm):
                 for i in xrange(5):
                     left = left.left
                     test_line = Line(left.a, best_line_right.a)
-                    if check_intersections(lm, test_line.a, test_line.b) \
-                            and check_point(lm, test_line.midpoint):
+                    if _line_ok(lm, test_line):
                         best_line_left = left
                         worked = True
                 for i in xrange(5):
                     right = right.right
                     test_line = Line(best_line_left.a, right.a)
-                    if check_intersections(lm, test_line.a, test_line.b) \
-                                and check_point(lm, test_line.midpoint):
+                    if _line_ok(lm, test_line):
                         best_line_right = right
                         worked = True
             new_line = Line(
@@ -148,9 +147,7 @@ def add_seas_to(lm):
                                 terr.line.a, terr.line.b, 
                                 terr2.line.a, terr2.line.b
                             ):
-                        if check_intersections(lm, 
-                                    terr.line.a, terr2.line.b
-                                ):
+                        if check_intersections(lm, terr.line.a, terr2.line.b):
                             new_line = Line(
                                 terr.line.a, terr2.line.b, 
                                 terr.line.left, terr2.line.right
