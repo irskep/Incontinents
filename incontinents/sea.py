@@ -28,13 +28,9 @@ def _possible_starting_lines(lm):
         line = line.right
     return bay_starts
 
-def add_seas_to(lm):
+def _seed_bays(lm):
     max_seeks = len(lm.outside_lines)/3
     bay_starts = _possible_starting_lines(lm)
-    
-    ni = 0
-    
-    #Find bays for all seed lines
     for line in bay_starts:
         line_left = line
         line_right = line
@@ -89,8 +85,10 @@ def add_seas_to(lm):
                 best_line_left.left, best_line_right
             )
             new_bay = SeaTerr(new_line)
-            ni += 1
             lm.sea_terrs.add(new_bay)
+
+def add_seas_to(lm):
+    _seed_bays(lm)
             
     removal_queue = set()
     persistent_lines = set()
