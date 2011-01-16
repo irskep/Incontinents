@@ -81,6 +81,40 @@ def _seed_bays(lm):
             new_bay = SeaTerr(new_line)
             lm.sea_terrs.add(new_bay)
 
+def _remove_overlapping_bays(lm):
+    removal_queue = set()
+    for terr in lm.sea_terrs:
+        if terr not in removal_queue:
+            for terr2 in lm.sea_terrs:
+                intersect = False
+                if terr != terr2 and terr2 not in removal_queue:
+                    s1 = set(terr.adjacencies)
+                    s2 = set(terr2.adjacencies)
+                    if terr.line.a == terr2.line.a \
+                            or terr.line.b == terr2.line.b \
+                            or (s1 & s2):
+                        if terr.size > terr2.size:
+                            removal_queue.add(terr2)
+                        else:
+                            removal_queue.add(terr1)
+            if terr.size < 5: removal_queue.add(terr)
+    lm.sea_terrs = lm.sea_terrs.difference(removal_queue)
+
+def _bump_out_borders(lm):
+    for terr in lm.sea_terrs:
+        new_x, new_y = terr.x, terr.y
+        new_x += math.cos(terr.line.normal)*20.0
+        new_y += math.sin(terr.line.normal)*20.0
+        new_point = Point(new_x, new_y)
+        nl1 = Line(terr.line.a, new_point, terr.line.left)
+        nl2 = Line(new_point, terr.line.b, nl1, terr.line.right)
+        nl1.right = nl2
+        terr.lines = [nl1, nl2]
+        line2 = terr.line.left.right
+        while line2 != terr.line.right:
+            line2.color = (1,1,1,1)
+            line2 = line2.right
+
 def _fill_sea_terr_adjacency_lists(lm):
     for terr in lm.sea_terrs:
         moving_line = terr.line.left.right
@@ -94,6 +128,7 @@ def _fill_sea_terr_adjacency_lists(lm):
         terr.size = len(terr.adjacencies)
 
 def add_seas_to(lm):
+    print 'oceans of pain'
     lm.fill_triangle_hash()
     _seed_bays(lm)
     removal_queue = set()
@@ -150,34 +185,7 @@ def add_seas_to(lm):
                                 removal_queue.add(terr2)
     lm.sea_terrs.update(new_bays)
     lm.sea_terrs = lm.sea_terrs.difference(removal_queue)
-    removal_queue = set()
-    for terr in lm.sea_terrs:
-        for terr2 in lm.sea_terrs:
-            intersect = False
-            if terr != terr2:
-                s1 = set(terr.adjacencies)
-                s2 = set(terr2.adjacencies)
-                if terr.line.a == terr2.line.a \
-                        or terr.line.b == terr2.line.b \
-                        or (s1 & s2):
-                    if terr.size == terr2.size:
-                        terr2.size += 1
-                    if terr.size > terr2.size:
-                        removal_queue.add(terr2)
-        if terr.size < 3: removal_queue.add(terr)
-    lm.sea_terrs = lm.sea_terrs.difference(removal_queue)
-    for terr in lm.sea_terrs:
-        new_x, new_y = terr.x, terr.y
-        new_x += math.cos(terr.line.normal)*20.0
-        new_y += math.sin(terr.line.normal)*20.0
-        new_point = Point(new_x, new_y)
-        nl1 = Line(terr.line.a, new_point, terr.line.left)
-        nl2 = Line(new_point, terr.line.b, nl1, terr.line.right)
-        nl1.right = nl2
-        terr.lines = [nl1, nl2]
-        line2 = terr.line.left.right
-        while line2 != terr.line.right:
-            line2.color = (1,1,1,1)
-            line2 = line2.right
     
+    _remove_overlapping_bays(lm)
+    _bump_out_borders(lm)
     _fill_sea_terr_adjacency_lists(lm)
