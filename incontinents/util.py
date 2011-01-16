@@ -24,10 +24,18 @@ def dot(v1,v2):
 
 def point_inside_triangle(x, y, coord_list):
     # http://www.blackpawn.com/texts/pointinpoly/default.html
+    
     P = (x, y)
     A = coord_list[0:2]
     B = coord_list[2:4]
     C = coord_list[4:6]
+    x1, x2, x3 = A[0], B[0], C[0]
+    y1, y2, y3 = A[0], B[0], C[0]
+    if x < x1 and x < x2 and x < x3: return False
+    if x > x1 and x > x2 and x > x3: return False
+    if y < y1 and y < y2 and x < y3: return False
+    if y > y1 and y > y2 and x > y3: return False
+    
     v0 = tuple_sub(C, A)
     v1 = tuple_sub(B, A)
     v2 = tuple_sub(P, A)
