@@ -10,10 +10,9 @@ def check_intersections(lm, a, b):
     return True
 
 def check_point(lm, point):
-    for territory in lm.land_terrs:
-        for tri in territory.triangles:
-            if util.point_inside_triangle(point.x, point.y, tri):
-                return False
+    for tri in lm.triangles_colliding_with(point.x, point.y):
+        if util.point_inside_triangle(point.x, point.y, tri):
+            return False
     return True
 
 def _possible_starting_lines(lm):
@@ -87,9 +86,22 @@ def _seed_bays(lm):
             new_bay = SeaTerr(new_line)
             lm.sea_terrs.add(new_bay)
 
+def _fill_sea_terr_adjacency_lists(lm):
+    for terr in lm.sea_terrs:
+        moving_line = terr.line.left.right
+        while moving_line != terr.line.right.left:
+            for terr2 in moving_line.territories:
+                if not terr2 in terr.adjacencies:
+                    terr.adjacencies.append(terr2)
+                if not terr in terr2.adjacencies:
+                    terr2.adjacencies.append(terr)
+            moving_line = moving_line.right
+        terr.size = len(terr.adjacencies)
+
 def add_seas_to(lm):
+    lm.fill_triangle_hash()
     _seed_bays(lm)
-            
+    _fill_sea_terr_adjacency_lists(lm)
     removal_queue = set()
     persistent_lines = set()
     new_bays = set()
@@ -174,13 +186,4 @@ def add_seas_to(lm):
             line2.color = (1,1,1,1)
             line2 = line2.right
     
-    for terr in lm.sea_terrs:
-        moving_line = terr.line.left.right
-        while moving_line != terr.line.right.left:
-            for terr2 in moving_line.territories:
-                if not terr2 in terr.adjacencies:
-                    terr.adjacencies.append(terr2)
-                if not terr in terr2.adjacencies:
-                    terr2.adjacencies.append(terr)
-            moving_line = moving_line.right
-        terr.size = len(terr.adjacencies)
+    _fill_sea_terr_adjacency_lists(lm)

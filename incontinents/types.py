@@ -123,6 +123,13 @@ class Map(object):
         for tri in self.triangle_hash[self.hash_for_point(x, y)]:
             yield tri
     
+    def fill_triangle_hash(self):
+        for territory in self.land_terrs:
+            for tri in territory.triangles:
+                self.triangle_hash[self.hash_for_point(tri[0], tri[1])].add(tri)
+                self.triangle_hash[self.hash_for_point(tri[2], tri[3])].add(tri)
+                self.triangle_hash[self.hash_for_point(tri[4], tri[5])].add(tri)
+    
     def territory_adjacent_to(self, terr):
         for line in terr.lines:
             for terr2 in line.territories:
