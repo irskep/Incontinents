@@ -79,9 +79,12 @@ class Map(object):
     
     def _combine_random(self):
         def line_maker():
+            i = 0
             for line in self.lines:
                 if len(line.territories) == 2:
                     yield line
+                    i += 1
+                    if i > 50: return
         score = lambda a: len(a.triangles) + len(a.adjacencies)
         metascore = lambda a: score(a.territories[0]) + score(a.territories[1])
         min_func = lambda a, b: a if metascore(a) < metascore(b) or random.randint(0, 2) == 0 else b
