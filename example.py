@@ -24,8 +24,8 @@ for t in landmass.land_terrs:
     for t2 in t.adjacencies:
         if t2 not in landmass.land_terrs and t2 not in landmass.sea_terrs:
             print 'wtf?', t2
-landmass.assign_names(namer)
 landmass.remove_surrounded_or_tiny_territories()
+landmass.assign_names(namer)
 print 'countries'
 country.assign_countries_to(landmass, args.num)
 

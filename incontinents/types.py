@@ -48,6 +48,7 @@ class Map(object):
     def combine(self, absorber, to_remove):
         absorber.color = [(absorber.color[i]+to_remove.color[i])/2 for i in range(4)]
         if absorber == to_remove: 
+            print 'bad combine attempt: territories are the same'
             return
         if to_remove not in self.land_terrs:
             print 'bad combine attempt: territory not in list'
@@ -55,11 +56,11 @@ class Map(object):
         self.land_terrs.remove(to_remove)
         absorber.triangles.extend(to_remove.triangles)
         for l in to_remove.lines:
-            if l not in absorber.lines:
-                absorber.add_line(l)
-            else:
+            if l in absorber.lines:
                 absorber.remove_line(l)
                 self.lines.remove(l)
+            else:
+                absorber.add_line(l)
         for l in to_remove.lines[:]:
             to_remove.remove_line(l)
         for t in to_remove.adjacencies:
@@ -68,7 +69,8 @@ class Map(object):
         absorber.find_adjacencies()
     
     def enforce_territory_count_limit(self, n):
-        if n < 2:
+        if n < 2 or len(self.land_terrs) < 2 \
+        or len(self.outside_lines) == len(self.lines):
             return 'No thanks'
         while len(self.land_terrs) > n:
             self._combine_random()
@@ -76,35 +78,23 @@ class Map(object):
             t.color = grey_colorer.next()
     
     def _combine_random(self):
-        if len(self.land_terrs) < 2: return
-        if len(self.outside_lines) == len(self.lines): return
-        inside_lines = list(self.lines.difference(self.outside_lines))
+        def line_maker():
+            for line in self.lines:
+                if len(line.territories) == 2:
+                    yield line
+        score = lambda a: len(a.triangles) + len(a.adjacencies)
+        metascore = lambda a: score(a.territories[0]) + score(a.territories[1])
+        min_func = lambda a, b: a if metascore(a) < metascore(b) or random.randint(0, 2) == 0 else b
         
-        # avg_combos = 0
-        # for terr in self.land_terrs:
-        #     avg_combos += terr.combinations
-        # avg_combos /= float(len(self.land_terrs))
+        _first = None
+        for line in self.lines:
+            if len(line.territories) == 2:
+                _first = line
+                break
         
-        _first = self.land_terrs.pop()
-        self.land_terrs.add(_first)
-        
-        found = False
-        i = 0
-        while not found and i < 200:
-            i += 1
-            line = random.choice(inside_lines)
-            found = True
-            if len(line.territories) <= 1:
-                found = False
-            # else:
-            #     for terr in line.territories:
-            #         if terr.combinations > avg_combos:
-            #             found = False
-        try:
-            absorber = line.territories[0]
-            to_remove = line.territories[1]
-        except:
-            return
+        line = reduce(min_func, line_maker(), _first)
+        absorber = line.territories[0]
+        to_remove = line.territories[1]
         self.combine(absorber, to_remove)
     
     def hashes_for_pair(self, a, b):
