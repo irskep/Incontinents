@@ -92,9 +92,6 @@ class MapGenWindow(pyglet.window.Window):
         pyglet.gl.glColor4f(1,1,1,1)
         self.batch.draw()
         gl.glPopMatrix()
-        self.draw_line(
-            0, self.height-20, self.my_gen.base_distance, self.height-20
-        )
     
     def update_labels(self):
         for label in self.labels:

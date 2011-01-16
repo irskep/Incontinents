@@ -1,5 +1,6 @@
 import random
 import itertools
+import collections
 
 country_colors = [
     (1.0, 0.0, 0.0, 1.0), (1.0, 0.5, 0.0, 1.0), (1.0, 1.0, 0.0, 1.0), 
@@ -26,9 +27,11 @@ class Map(object):
         self.land_terrs = land_terrs
         self.sea_terrs = sea_terrs
         self.name = "Untitled"
-        self.map_id = 0
+        self.base_distance = 35.0
         self.width, self.height = 0, 0
         self.offset = (0,0)
+        self.hash_cell_size = int(self.base_distance*4.5)
+        self.hash = collections.defaultdict(set)
     
     def find_bounds(self):
         xs = lambda: itertools.chain(*((line.a.x, line.b.x) for line in self.outside_lines))
@@ -102,6 +105,10 @@ class Map(object):
         except:
             return
         self.combine(absorber, to_remove)
+    
+    def hashes_for_pair(self, a, b):
+        return (int(a.x/self.hash_cell_size), int(a.y/self.hash_cell_size)), \
+               (int(b.x/self.hash_cell_size), int(b.y/self.hash_cell_size))
     
     def territory_adjacent_to(self, terr):
         for line in terr.lines:

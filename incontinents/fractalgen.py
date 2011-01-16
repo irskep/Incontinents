@@ -18,28 +18,23 @@ class FractalGenerator(object):
     def __init__(self, num_lines):
         super(FractalGenerator, self).__init__()
         self.wiggle = math.pi/6
-        self.base_distance = 35.0
-        self.hash_cell_size = int(self.base_distance*4.5)
-        self.hash = collections.defaultdict(set)
         self.num_lines = num_lines
         self.check_collisions = True
         self.offset = (0,0)
         self.width, self.height = 0, 0
     
     def generate(self):
-        self.lines = set()
-        self.outside_lines = set()
-        self.land_terrs = set()
+        self.lm = Map(set(), set(), set(), set())
         
         self.generate_initial_polygon()
         self.generate_iteratively()
         self.connect()
         
-        return self.lines, self.outside_lines, self.land_terrs
+        return self.lm
     
     def generate_iteratively(self):
         while self.num_lines > 0:
-            outside_list = list(self.outside_lines)
+            outside_list = list(self.lm.outside_lines)
             base_line = random.choice(outside_list)
             if not base_line.favored:
                 base_line = random.choice(outside_list)
@@ -72,8 +67,8 @@ class FractalGenerator(object):
             else:
                 first_line = new_line
                 last_line = new_line
-            self.lines.add(new_line)
-            self.outside_lines.add(new_line)
+            self.lm.lines.add(new_line)
+            self.lm.outside_lines.add(new_line)
             triangles.append(
                 (0, 0, last_point.x, last_point.y, new_point.x, new_point.y)
             )
@@ -81,48 +76,44 @@ class FractalGenerator(object):
             line_num += 1
         last_line.right = first_line
         first_line.left = last_line
-        self.land_terrs = set()
-        self.add_terr(triangles, self.lines, (1,0,0,1))
-    
-    def hashes_for_pair(self, a, b):
-        return (int(a.x/self.hash_cell_size), int(a.y/self.hash_cell_size)), \
-               (int(b.x/self.hash_cell_size), int(b.y/self.hash_cell_size))
+        self.lm.land_terrs = set()
+        self.add_terr(triangles, self.lm.lines, (1,0,0,1))
     
     def make_line(self, *args, **kwargs):
         l = Line(*args, **kwargs)
-        for k in self.hashes_for_pair(l.a, l.b):
-            self.hash[k].add(l)
+        for k in self.lm.hashes_for_pair(l.a, l.b):
+            self.lm.hash[k].add(l)
         return l
     
     def remove_line_from_outside(self, line):
-        self.outside_lines.remove(line)
-        for k in self.hashes_for_pair(line.a, line.b):
+        self.lm.outside_lines.remove(line)
+        for k in self.lm.hashes_for_pair(line.a, line.b):
             try:
-                self.hash[k].remove(line)
+                self.lm.hash[k].remove(line)
             except KeyError:
                 pass
     
     def add_terr(self, triangles, lines, color=(0.5, 0.5, 0.5, 1)):
         new_terr = LandTerr(lines, color=color)
         new_terr.triangles = triangles
-        self.land_terrs.add(new_terr)
+        self.lm.land_terrs.add(new_terr)
         return new_terr
     
     def random_length(self):
-        return random.random()*self.base_distance*0.3 + self.base_distance*0.7
+        return random.random()*self.lm.base_distance*0.3 + self.lm.base_distance*0.7
     
     def check_intersections(self, a, b):
         if not self.check_collisions: return True
-        # for line in self.outside_lines:
-        for k in self.hashes_for_pair(a, b):
-            for line in self.hash[k]:
+        # for line in self.lm.outside_lines:
+        for k in self.lm.hashes_for_pair(a, b):
+            for line in self.lm.hash[k]:
                 if util.intersect(a, b, line.a, line.b):
                     return False
         return True
     
     def check_point(self, point):
         if not self.check_collisions: return True
-        for territory in self.land_terrs:
+        for territory in self.lm.land_terrs:
             for tri in territory.triangles:
                 if util.point_inside_triangle(point.x, point.y, tri):
                     return False
@@ -135,13 +126,13 @@ class FractalGenerator(object):
             return False
         if not self.check_intersections(line.a, line.right.b): return False
         if util.angle_between_line_and_next(line) > math.pi*0.75 \
-            or line.length + line.right.length > self.base_distance*3.5:
+            or line.length + line.right.length > self.lm.base_distance*3.5:
             return True
         new_line = self.make_line(line.a, line.right.b, line.left, line.right.right)
         line.left.right = new_line
         line.right.right.left = new_line
-        self.lines.add(new_line)
-        self.outside_lines.add(new_line)
+        self.lm.lines.add(new_line)
+        self.lm.outside_lines.add(new_line)
         self.remove_line_from_outside(line)
         self.remove_line_from_outside(line.right)
         self.num_lines -= 1
@@ -159,10 +150,10 @@ class FractalGenerator(object):
         base_line.left.right = nl1
         base_line.right.left = nl2
         self.remove_line_from_outside(base_line)
-        self.outside_lines.add(nl1)
-        self.outside_lines.add(nl2)
-        self.lines.add(nl1)
-        self.lines.add(nl2)
+        self.lm.outside_lines.add(nl1)
+        self.lm.outside_lines.add(nl2)
+        self.lm.lines.add(nl1)
+        self.lm.lines.add(nl2)
         self.num_lines -= 2
         self.add_terr([(base_line.a.x, base_line.a.y, 
                         base_line.b.x, base_line.b.y, 
@@ -223,10 +214,10 @@ class FractalGenerator(object):
         expand_dict[random.randint(0,len(expand_dict)-1)](base_line)
     
     def connect(self):
-        for line in self.outside_lines:
+        for line in self.lm.outside_lines:
             for adj in line.territories:
                 adj.is_coastal = True
         
-        for terr in self.land_terrs:
+        for terr in self.lm.land_terrs:
             terr.find_adjacencies()
     
