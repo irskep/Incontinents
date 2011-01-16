@@ -16,9 +16,6 @@ def median(countries):
         upper = values[len(values)/2]
         return float(lower+upper)/2
 
-def dot(v1,v2):
-    return v1[0]*v2[0]+v1[1]*v2[1]
-
 def point_inside_triangle(x, y, coord_list):
     # http://www.blackpawn.com/texts/pointinpoly/default.html
     
@@ -34,15 +31,15 @@ def point_inside_triangle(x, y, coord_list):
     B = coord_list[2:4]
     C = coord_list[4:6]
     
-    v0 = C[0]-A[0], C[1]-A[1]
-    v1 = B[0]-A[0], B[1]-A[1]
-    v2 = P[0]-A[0], P[1]-A[1]
+    v0 = (C[0]-A[0], C[1]-A[1])
+    v1 = (B[0]-A[0], B[1]-A[1])
+    v2 = (P[0]-A[0], P[1]-A[1])
     
-    dot00 = dot(v0, v0)
-    dot01 = dot(v0, v1)
-    dot02 = dot(v0, v2)
-    dot11 = dot(v1, v1)
-    dot12 = dot(v1, v2)
+    dot00 = v0[0]*v0[0]+v0[1]*v0[1]
+    dot01 = v0[0]*v1[0]+v0[1]*v1[1]
+    dot02 = v0[0]*v2[0]+v0[1]*v2[1]
+    dot11 = v1[0]*v1[0]+v1[1]*v1[1]
+    dot12 = v1[0]*v2[0]+v1[1]*v2[1]
     
     invDenom = 1 / (dot00 * dot11 - dot01 * dot01)
     u = (dot11 * dot02 - dot01 * dot12) * invDenom
