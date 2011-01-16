@@ -1,7 +1,7 @@
 import argparse, sys
 from incontinents import steve, render, demo, namegen, country
 
-primitive_ratio = 0.7
+primitive_ratio = 0.5
 
 parser = argparse.ArgumentParser(prog='Incontinents',
                                  description='Generate landmasses')
