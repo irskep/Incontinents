@@ -31,7 +31,8 @@ class Map(object):
         self.width, self.height = 0, 0
         self.offset = (0,0)
         self.hash_cell_size = int(self.base_distance*4.5)
-        self.hash = collections.defaultdict(set)
+        self.outer_line_hash = collections.defaultdict(set)
+        self.triangle_hash = collections.defaultdict(set)
     
     def find_bounds(self):
         xs = lambda: itertools.chain(*((line.a.x, line.b.x) for line in self.outside_lines))
@@ -109,6 +110,18 @@ class Map(object):
     def hashes_for_pair(self, a, b):
         return (int(a.x/self.hash_cell_size), int(a.y/self.hash_cell_size)), \
                (int(b.x/self.hash_cell_size), int(b.y/self.hash_cell_size))
+    
+    def outside_lines_colliding_with(self, a, b):
+        for k in self.hashes_for_pair(a, b):
+            for line in self.outer_line_hash[k]:
+                yield line
+    
+    def hash_for_point(self, x, y):
+        return (int(x/self.hash_cell_size), int(y/self.hash_cell_size))
+    
+    def triangles_colliding_with(self, x, y):
+        for tri in self.triangle_hash[self.hash_for_point(x, y)]:
+            yield tri
     
     def territory_adjacent_to(self, terr):
         for line in terr.lines:

@@ -83,7 +83,6 @@ class Triangle(object):
         self.mid = mid
         self.adj = list()
         self.__hash = None
-        self.lines = (Line(p1, p2), Line(p2, p3), Line(p3, p1))
     
     def area(self):
         def length(a, b):

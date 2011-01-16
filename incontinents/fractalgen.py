@@ -82,14 +82,14 @@ class FractalGenerator(object):
     def make_line(self, *args, **kwargs):
         l = Line(*args, **kwargs)
         for k in self.lm.hashes_for_pair(l.a, l.b):
-            self.lm.hash[k].add(l)
+            self.lm.outer_line_hash[k].add(l)
         return l
     
     def remove_line_from_outside(self, line):
         self.lm.outside_lines.remove(line)
         for k in self.lm.hashes_for_pair(line.a, line.b):
             try:
-                self.lm.hash[k].remove(line)
+                self.lm.outer_line_hash[k].remove(line)
             except KeyError:
                 pass
     
@@ -104,11 +104,9 @@ class FractalGenerator(object):
     
     def check_intersections(self, a, b):
         if not self.check_collisions: return True
-        # for line in self.lm.outside_lines:
-        for k in self.lm.hashes_for_pair(a, b):
-            for line in self.lm.hash[k]:
-                if util.intersect(a, b, line.a, line.b):
-                    return False
+        for line in self.lm.outside_lines_colliding_with(a, b):
+            if util.intersect(a, b, line.a, line.b):
+                return False
         return True
     
     def check_point(self, point):
