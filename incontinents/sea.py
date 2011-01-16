@@ -127,7 +127,6 @@ def _fill_sea_terr_adjacency_lists(lm, symmetric=True):
         terr.size = len(terr.adjacencies)
 
 def add_seas_to(lm):
-    print 'oceans of pain'
     lm.fill_triangle_hash()
     _seed_bays(lm)
     removal_queue = set()
