@@ -92,8 +92,11 @@ def assign_countries_to(landmass, num=7, namer=None):
     for c in countries:
         c.add(random_terrs.pop())
     
+    
+    did_work = True
     terrs_left = len(landmass.land_terrs)-len(countries)
-    while terrs_left > 0:
+    while terrs_left > 0 and did_work:
+        did_work = False
         countries.sort(lambda x, y: len(x)-len(y))
         country = countries[0]
         terrs = {c: set() for c in countries}
@@ -106,8 +109,10 @@ def assign_countries_to(landmass, num=7, namer=None):
                 t = terrs[r].pop()
                 if r is not None:
                     r.remove(t)
+                    did_work = True
                     terrs_left -= 0.5
                 else:
+                    did_work = True
                     terrs_left -= 1
                 country.add(t)
                 break

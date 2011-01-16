@@ -96,7 +96,7 @@ def _remove_overlapping_bays(lm):
                         if terr.size > terr2.size:
                             removal_queue.add(terr2)
                         else:
-                            removal_queue.add(terr1)
+                            removal_queue.add(terr)
             if terr.size < 5: removal_queue.add(terr)
     lm.sea_terrs = lm.sea_terrs.difference(removal_queue)
 
@@ -115,14 +115,14 @@ def _bump_out_borders(lm):
             line2.color = (1,1,1,1)
             line2 = line2.right
 
-def _fill_sea_terr_adjacency_lists(lm):
+def _fill_sea_terr_adjacency_lists(lm, symmetric=True):
     for terr in lm.sea_terrs:
         moving_line = terr.line.left.right
         while moving_line != terr.line.right.left:
             for terr2 in moving_line.territories:
                 if not terr2 in terr.adjacencies:
                     terr.adjacencies.append(terr2)
-                if not terr in terr2.adjacencies:
+                if symmetric and not terr in terr2.adjacencies:
                     terr2.adjacencies.append(terr)
             moving_line = moving_line.right
         terr.size = len(terr.adjacencies)
@@ -134,17 +134,12 @@ def add_seas_to(lm):
     removal_queue = set()
     persistent_lines = set()
     new_bays = set()
+    
+    _fill_sea_terr_adjacency_lists(lm, symmetric=False)
+    _remove_overlapping_bays(lm)
+    
     for terr in lm.sea_terrs:
         if terr not in removal_queue:
-            moving_line = terr.line.left.right
-            while moving_line != terr.line.right.left:
-                moving_line = moving_line.right
-                for terr2 in lm.sea_terrs:
-                    if terr2 != terr:
-                        if moving_line == terr2.line.left or \
-                                moving_line == terr2.line.right:
-                            if terr2.size < terr.size:
-                                removal_queue.add(terr2)
             for terr2 in lm.sea_terrs:
                 if terr2 not in removal_queue and terr2 != terr:
                     if terr.size == terr2.size:
@@ -186,6 +181,5 @@ def add_seas_to(lm):
     lm.sea_terrs.update(new_bays)
     lm.sea_terrs = lm.sea_terrs.difference(removal_queue)
     
-    _remove_overlapping_bays(lm)
     _bump_out_borders(lm)
-    _fill_sea_terr_adjacency_lists(lm)
+    _fill_sea_terr_adjacency_lists(lm, symmetric=True)

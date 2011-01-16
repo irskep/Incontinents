@@ -26,6 +26,7 @@ for t in landmass.land_terrs:
             print 'wtf?', t2
 landmass.assign_names(namer)
 landmass.remove_surrounded_or_tiny_territories()
+print 'countries'
 country.assign_countries_to(landmass, args.num)
 
 if args.output:
