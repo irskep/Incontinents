@@ -83,14 +83,14 @@ class MapGenWindow(pyglet.window.Window):
             for line in terr.lines:
                 pyglet.gl.glColor4f(*line.color)
                 self.draw_line(line.a.x, line.a.y, line.b.x, line.b.y)
-        # if self.draw_capitals:
-        #     for terr in itertools.chain(self.landmass.land_terrs, self.landmass.sea_terrs):
-        #         pyglet.gl.glColor4f(1,1,1,1)
-        #         w = terr.label.content_width/2+2
-        #         h = terr.label.content_height/2
-        #         self.draw_rect(terr.x-w, terr.y-h, terr.x+w, terr.y+h)
-        # pyglet.gl.glColor4f(1,1,1,1)
-        # self.batch.draw()
+        if self.draw_capitals:
+            for terr in itertools.chain(self.landmass.land_terrs, self.landmass.sea_terrs):
+                pyglet.gl.glColor4f(1,1,1,1)
+                w = terr.label.content_width/2+2
+                h = terr.label.content_height/2
+                self.draw_rect(terr.x-w, terr.y-h, terr.x+w, terr.y+h)
+        pyglet.gl.glColor4f(1,1,1,1)
+        self.batch.draw()
         gl.glPopMatrix()
     
     def update_labels(self):
