@@ -16,9 +16,6 @@ def median(countries):
         upper = values[len(values)/2]
         return float(lower+upper)/2
 
-def tuple_sub(a, b):
-    return (a[0]-b[0], a[1]-b[1])
-
 def dot(v1,v2):
     return v1[0]*v2[0]+v1[1]*v2[1]
 
@@ -37,9 +34,9 @@ def point_inside_triangle(x, y, coord_list):
     B = coord_list[2:4]
     C = coord_list[4:6]
     
-    v0 = tuple_sub(C, A)
-    v1 = tuple_sub(B, A)
-    v2 = tuple_sub(P, A)
+    v0 = C[0]-A[0], C[1]-A[1]
+    v1 = B[0]-A[0], B[1]-A[1]
+    v2 = P[0]-A[0], P[1]-A[1]
     
     dot00 = dot(v0, v0)
     dot01 = dot(v0, v1)
