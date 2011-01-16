@@ -27,27 +27,33 @@ def _possible_starting_lines(lm):
         line = line.right
     return bay_starts
 
+def _seed_bay(lm, line_left, line_right=None, best_line_left=None, best_line_right=None, i=0, max_seeks=None):
+    max_seeks = max_seeks or len(lm.outside_lines)/3
+    if i >= max_seeks:
+        return best_line_left, best_line_right
+    line_right = line_right or line_left
+    
+    line_right = line_right.right
+    test_line = Line(line_left.a, line_right.a)
+    if check_intersections(lm, test_line.a, test_line.b) and \
+            check_point(lm, test_line.midpoint):
+        best_line_left, best_line_right = line_left, line_right
+    line_left = line_left.left
+    test_line = Line(line_left.a, line_right.a)
+    if check_intersections(lm, test_line.a, test_line.b) and \
+            check_point(lm, test_line.midpoint):
+        best_line_left, best_line_right = line_left, line_right
+    return _seed_bay(lm, line_left, line_right,
+                     best_line_left, best_line_right,
+                     i+1, max_seeks)
+
 def _seed_bays(lm):
-    max_seeks = len(lm.outside_lines)/3
     bay_starts = _possible_starting_lines(lm)
     for line in bay_starts:
-        line_left = line
-        line_right = line
-        best_line_left = None
-        best_line_right = None
-        i = 0
-        while i < max_seeks:
-            i += 1
-            line_right = line_right.right
-            test_line = Line(line_left.a, line_right.a)
-            if check_intersections(lm, test_line.a, test_line.b) and \
-                    check_point(lm, test_line.midpoint):
-                best_line_left, best_line_right = line_left, line_right
-            line_left = line_left.left
-            test_line = Line(line_left.a, line_right.a)
-            if check_intersections(lm, test_line.a, test_line.b) and \
-                    check_point(lm, test_line.midpoint):
-                best_line_left, best_line_right = line_left, line_right
+        # Find a concave area
+        best_line_left, best_line_right = _seed_bay(lm, line)
+        
+        # Expand it as much as possible
         if best_line_left != None:
             left = best_line_left
             right = best_line_right
@@ -90,7 +96,6 @@ def _fill_sea_terr_adjacency_lists(lm):
 def add_seas_to(lm):
     lm.fill_triangle_hash()
     _seed_bays(lm)
-    _fill_sea_terr_adjacency_lists(lm)
     removal_queue = set()
     persistent_lines = set()
     new_bays = set()
